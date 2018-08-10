@@ -233,7 +233,8 @@ z:2:下面旋转
 
 ## 魔方求解手动公式
 二阶魔方只需要两个公式就一定能够还原.
-改变0,1两块的状态,不改变位置,应用下面的公式三次则恢复到原来的形状   
+改变0,1两块的状态,不改变位置,应用下面的公式三次则恢复到原来的形状 
+76个公式  
 ``` 
 下后下下后下下左左下左后后后左后后后    
 左后下下左左后下左左下下左后左后后后    
@@ -411,3 +412,13 @@ z:2:下面旋转
 ## TODO
 三阶魔方求解器
 魔方可视化程序
+
+
+# 参考资料
+https://github.com/newbieYoung/Threejs_rubik
+https://www.zhihu.com/question/267397900/answer/325630457
+https://newbieweb.lione.me/2017/03/02/ThreeJS%E5%9B%9B%E6%AD%A5%E5%88%B6%E4%BD%9C%E4%B8%80%E4%B8%AA%E7%AE%80%E6%98%93%E9%AD%94%E6%96%B9/
+https://github.com/miniwangdali/SimpleRubiksCube
+https://www.google.com/logos/2014/rubiks/iframe/index.html
+https://zhuanlan.zhihu.com/p/36304412
+https://zhuanlan.zhihu.com/p/40734187

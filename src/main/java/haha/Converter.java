@@ -13,7 +13,7 @@ int faceState[] = {2, 1, 0, 1, 2, 0};
 int in[][] = new int[6][4];
 // 0 is position,1 is state
 // ans[0][i] means the ith cube's position is at ans[0][i]
-int a[][] = new int[2][8];
+public int a[][] = new int[2][8];
 int operation = 0;
 
 int charToInt(char c) {
