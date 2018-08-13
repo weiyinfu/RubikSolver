@@ -1,5 +1,3 @@
-https://www.zhihu.com/question/267397900/answer/325630457
-
 # 二阶魔方求解器
 ![图片不见了](readme/ui.jpg)
 
@@ -409,6 +407,13 @@ https://www.zhihu.com/question/267397900/answer/325630457
 https://newbieweb.lione.me/2017/03/02/ThreeJS%E5%9B%9B%E6%AD%A5%E5%88%B6%E4%BD%9C%E4%B8%80%E4%B8%AA%E7%AE%80%E6%98%93%E9%AD%94%E6%96%B9/
 https://github.com/miniwangdali/SimpleRubiksCube
 https://www.google.com/logos/2014/rubiks/iframe/index.html
+https://www.zhihu.com/question/267397900/answer/325630457
 https://zhuanlan.zhihu.com/p/36304412
 https://zhuanlan.zhihu.com/p/40734187
 http://kociemba.org/cube.htm
+神一样的cube exploerer作者：两阶段算法
+http://kociemba.org/twophase.htm
+
+相信存在未知的算法巧妙的解决了目前人们认为不可能的问题。  
+要心存敬畏。  
+人与人之间的差距是天壤之别的。   
