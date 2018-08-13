@@ -1,8 +1,5 @@
 package input;
 
-import haha.TableSolver;
-import min2phase.Min2PhaseSolver;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.KeyAdapter;
@@ -42,6 +39,7 @@ JTextArea outputArea = new JTextArea();
 int[] face = {1, 3, 4, 5, 7, 10};
 final static String colorChars = "rygwbo";
 int N;//N阶魔方
+int windowSize;
 
 Color getColorFromChar(char c) {
     Color[] colorArray = {Color.RED, Color.YELLOW, Color.GREEN, Color.WHITE, Color.BLUE, Color.ORANGE};
@@ -55,25 +53,33 @@ void init() {
     inputArea.setLineWrap(true);
     inputArea.setFont(new Font("Conoslas", Font.BOLD, 20));
     inputArea.setColumns(10);
+    outputArea.setLineWrap(true);
     outputArea.setFont(new Font("楷体", Font.BOLD, 24));
-    outputArea.setEditable(false);
+    outputArea.setBackground(Color.BLACK);
+    outputArea.setForeground(Color.white);
 }
 
 public WindowInput(Solver solver) {
     this.N = solver.getN();
     setTitle(this.N + "阶魔方求解器");
-
-    this.setSize(800, 800);
-    imgPanel.setBounds(0, 0, 540, 720);
-    inputArea.setBounds(540, 0, 260, 720);
-    outputArea.setBounds(0, 720, 800, 80);
-    outputArea.setBackground(Color.BLACK);
-    outputArea.setForeground(Color.white);
+    Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+    windowSize = (int) (Math.min(screenSize.width, screenSize.height) * 0.8);
+    this.getContentPane().setPreferredSize(new Dimension(windowSize, windowSize));
+    this.pack();
+    imgPanel.setBounds(0, 0, (int) (480 / 800.0 * windowSize), (int) (640 / 800.0 * windowSize));
+    JScrollPane inputPane = new JScrollPane();
+    inputPane.add(inputArea);
+    inputPane.setViewportView(inputArea);
+    inputPane.setBounds((int) (480 / 800.0 * windowSize), 0, (int) (320 / 800.0 * windowSize), (int) (640 / 800.0 * windowSize));
+    JScrollPane outputPane = new JScrollPane();
+    outputPane.setBounds(0, (int) (640 / 800.0 * windowSize), windowSize, (int) (160 / 800.0 * windowSize));
+    outputPane.add(outputArea);
+    outputPane.setViewportView(outputArea);
     this.setResizable(false);
     this.setLayout(null);
     getContentPane().add(imgPanel);
-    getContentPane().add(inputArea);
-    getContentPane().add(outputArea);
+    getContentPane().add(inputPane);
+    getContentPane().add(outputPane);
     init();
 
     inputArea.addKeyListener(new KeyAdapter() {
@@ -97,10 +103,4 @@ public WindowInput(Solver solver) {
     setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 }
 
-public static void main(String[] args) {
-    new WindowInput(new TableSolver());
-//    new WindowInput(new ThreeSolver());
-//    new WindowInput(new BackTracing());
-//    new WindowInput(new Min2PhaseSolver());
-}
 }
