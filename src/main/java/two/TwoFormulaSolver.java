@@ -58,6 +58,7 @@ static void buildBigMoveTable() {
 String tos(String s) {
     //这可真是最精彩的片段
     //六种运算：把整体操作移动到末尾去
+    //TODO：这个地方必然是一个操作到另一个操作，一个操作不会变成2个操作，所以这里可以通过暴力枚举的方式构建表。
     String[][] rules = {
             {"D后", "下D"},
             {"D左", "左D"},
