@@ -1,3 +1,9 @@
+# 目录说明
+* CubeExploer：官网克隆
+* readme：一些图片
+* sirgedas：一场三阶魔方最短代码比赛的冠军程序
+* Threejs_rubik-master：三阶魔方JS教程
+
 # 二阶魔方求解器
 ![图片不见了](readme/ui.jpg)
 
