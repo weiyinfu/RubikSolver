@@ -1,6 +1,7 @@
 package two;
 
 import cube.DownAndRight;
+import cube.FormulaTransformer;
 
 import java.util.Map;
 import java.util.Random;
@@ -55,50 +56,6 @@ static void buildBigMoveTable() {
     }
 }
 
-String tos(String s) {
-    //这可真是最精彩的片段
-    //六种运算：把整体操作移动到末尾去
-    //TODO：这个地方必然是一个操作到另一个操作，一个操作不会变成2个操作，所以这里可以通过暴力枚举的方式构建表。
-    String[][] rules = {
-            {"D后", "下D"},
-            {"D左", "左D"},
-            {"D下", "后DR"},
-            {"R后", "左DDDR"},
-            {"R左", "后R"},
-            {"R下", "下R"},
-            {"左左左左", ""},
-            {"下下下下", ""},
-            {"后后后后", ""},
-            {"[RD]*$", ""}
-    };
-    //执行置换操作
-    while (true) {
-        for (String[] r : rules) {
-            s = s.replaceAll(r[0], r[1]);
-        }
-        StringBuilder builder = new StringBuilder();
-        for (int j = 0; j < s.length(); ) {
-            if ("后左下".contains(s.charAt(j) + "")) {
-                builder.append(s.charAt(j));
-                j++;
-            } else {
-                int k = j;
-                while (k < s.length() && (s.charAt(k) == 'D' || s.charAt(k) == 'R')) k++;
-                builder.append(DownAndRight.simplify(s.substring(j, k)));
-                j = k;
-            }
-        }
-        s = builder.toString();
-        if (s.indexOf('D') == -1 && s.indexOf('R') == -1) break;
-    }
-    StringBuilder output = new StringBuilder();
-    for (int i = 0; i < s.length(); i++) {
-        output.append(s.charAt(i));
-        if (i % 5 == 4) output.append("\n");
-    }
-    return output.toString();
-}
-
 //获取当前应该进行的大操作，应该进行交换的两个方块必然是相邻的
 int[] findBigOp(int[][] a) {
     for (int i = 0; i < 8; i++) {
@@ -142,7 +99,7 @@ public String getAns(MiniExtend a) {
             }
         }
     }
-    return tos(builder.toString());
+    return FormulaTransformer.eliminateDR(builder.toString(),getN());
 }
 
 

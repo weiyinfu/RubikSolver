@@ -9,18 +9,20 @@ import java.util.List;
  */
 public class Cube {
 //三种旋转操作，每种旋转操作对应一个面
-final static int[] operationFaceMap = {5, 1, 4};//三种操作对应的面
-//每次旋转会影响四个面
-final static int[][] rotateMap = {{0, 1, 4, 3}, {0, 2, 4, 5}, {1, 2, 3, 5}};
+final static int[] operationFaceMap = {5, 1, 4};//三种操作对应的面，后左下
+/*每次旋转会影响四个面，这四个面的顺序为：上右下左
+ */
+final static int[][] rotateMap = {{4, 3, 0, 1}, {0, 2, 4, 5}, {2, 3, 5, 1}};
 //颜色常量
 final static String COLOR = "wgrbyo";
 // opsite[i] is the opsite face of the ith face,6个面的对面
 final static int opsite[] = {4, 3, 5, 1, 0, 2};
 
 
-int N;
+int N;//魔方的阶数
 public char[][][] colors;//剑形表示法，第一维表示六个面，第二维表示x，y
 
+//魔方颜色的位置，是一个(face,x,y)三元组
 class Point {
     int face;
     int x, y;
@@ -43,7 +45,7 @@ public Cube(int n) {
     for (int i = 0; i < 6; i++) {
         for (int j = 0; j < N; j++) {
             for (int k = 0; k < N; k++) {
-                colors[i][j][k] = (char) (i * 6 + j * N + k);//COLOR.charAt(i);
+                colors[i][j][k] = COLOR.charAt(i);
             }
         }
     }
@@ -88,35 +90,36 @@ void rotateFace(char[][] a, boolean reverse) {
 }
 
 //将op,cnt,face,x映射为一个剑形表示法中的坐标
-Point map(int op, int cnt, int face, int x) {
-    if (op == 2) {
-        if (face == 1 || face == 2 || face == 3) {
-            return new Point(face, N - 1 - cnt, x);
-        } else if (face == 5) {
-            return new Point(face, cnt, N - 1 - x);
+//cnt表示从旋转的这个面向外数第几个环
+//edge表示face的哪一条边跟中间是邻居
+Point map(int op, int cnt, int face, int which) {
+    if (op == 0) {
+        if (face == 4) {
+            return new Point(face, N - 1 - cnt, which);
+        } else if (face == 3) {
+            return new Point(face, N - 1 - which, N - 1 - cnt);
+        } else if (face == 0) {
+            return new Point(face, cnt, N - 1 - which);
+        } else if (face == 1) {
+            return new Point(face, which, cnt);
         } else {
             throw new RuntimeException("impossible");
         }
     } else if (op == 1) {
-        if (face == 0 || face == 2 || face == 4 || face == 5) {
-            return new Point(face, x, cnt);
-        } else {
-            throw new RuntimeException("impossible");
-        }
-    } else if (op == 0) {
-        if (face == 0) {
-            return new Point(face, cnt, N - 1 - x);
+        return new Point(face, which, cnt);
+    } else if (op == 2) {
+        if (face == 2 || face == 3) {
+            return new Point(face, N - 1 - cnt, which);
+        } else if (face == 5) {
+            return new Point(face, cnt, N - 1 - which);
         } else if (face == 1) {
-            return new Point(face, x, cnt);
-        } else if (face == 4) {
-            return new Point(face, N - 1 - cnt, x);
-        } else if (face == 3) {
-            return new Point(face, x, N - 1 - cnt);
+            return new Point(face, N - 1 - cnt, which);
         } else {
-            throw new RuntimeException("impossible");
+            throw new RuntimeException("error face " + face);
         }
+    } else {
+        throw new RuntimeException("error op:" + op);
     }
-    throw new RuntimeException("impossible");
 }
 
 //旋转环
@@ -156,6 +159,7 @@ public boolean equals(Object obj) {
     return true;
 }
 
+//执行一个Operation，op表示方向，cnt表示旋转的层数
 void go(int op, int cnt) {
     rotateFace(colors[operationFaceMap[op]], false);
     for (int i = 0; i < cnt; i++) {
@@ -172,8 +176,8 @@ void go(List<Operation> operations) {
     }
 }
 
-void go(String operations) {
-    go(Operation.parse(operations));
+public void go(String operations) {
+    go(new OperationList(operations));
 }
 
 Cube copy() {
@@ -221,4 +225,5 @@ public String toString() {
     }
     return builder.toString();
 }
+
 }

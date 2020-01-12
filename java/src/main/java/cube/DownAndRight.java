@@ -106,6 +106,9 @@ static {
 
 //化简一个down&right操作序列
 public static String simplify(String dr) {
+    if (!dr.matches("^[DR]*$")) {
+        throw new RuntimeException("error sequence " + dr);
+    }
     int now = state(2, 3);
     for (int i = dr.length() - 1; i >= 0; i--) {
         char o = dr.charAt(i);

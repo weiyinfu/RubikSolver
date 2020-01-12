@@ -70,9 +70,9 @@ public WindowInput(Solver solver) {
     JScrollPane inputPane = new JScrollPane();
     inputPane.add(inputArea);
     inputPane.setViewportView(inputArea);
-    inputPane.setBounds((int) (480 / 800.0 * windowSize), 0, (int) (320 / 800.0 * windowSize), (int) (640 / 800.0 * windowSize));
+    inputPane.setBounds(0, (int) (640 / 800.0 * windowSize), windowSize, (int) (160 / 800.0 * windowSize));
     JScrollPane outputPane = new JScrollPane();
-    outputPane.setBounds(0, (int) (640 / 800.0 * windowSize), windowSize, (int) (160 / 800.0 * windowSize));
+    outputPane.setBounds((int) (480 / 800.0 * windowSize), 0, (int) (320 / 800.0 * windowSize), (int) (640 / 800.0 * windowSize));
     outputPane.add(outputArea);
     outputPane.setViewportView(outputArea);
     this.setResizable(false);

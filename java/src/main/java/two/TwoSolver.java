@@ -1,7 +1,9 @@
 package two;
 
 import input.Solver;
-
+/**
+ * 虚拟类，用于执行校验操作
+ * */
 public abstract class TwoSolver implements Solver {
 abstract String getAns(String input);
 
