@@ -163,7 +163,7 @@
                     }
                 }
                 if (this.validColors.length >= 6 * this.n * this.n) {
-                    axios.get("/api/solve", {
+                    this.get("/api/solve", {
                         params: {
                             n: this.n,
                             q: this.validColors,
@@ -189,6 +189,13 @@
             showToast(message, color) {
                 this.toast.message = message
                 this.toast.color = color ? 'red' : color
+            },
+            get(url,...args) {
+                const appName = "/RubikSolver/"
+                if (url.startsWith("/api/") && location.pathname.startsWith(appName)) {
+                    url = `${appName}${url.slice(1)}`
+                }
+                return axios.get(url, ...args)
             }
         }
     }
