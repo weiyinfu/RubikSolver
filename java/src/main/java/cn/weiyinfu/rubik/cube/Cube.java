@@ -155,7 +155,7 @@ void go(int op, int cnt) {
     }
 }
 
-void go(List<Operation> operations) {
+public void go(List<Operation> operations) {
     for (Operation o : operations) {
         go(o.type, o.cnt);
     }
