@@ -1,4 +1,4 @@
-package cn.weiyinfu.rubik.diamond;
+package cn.weiyinfu.rubik.legacy;
 
 public class Pair<K, V> {
     public K k;

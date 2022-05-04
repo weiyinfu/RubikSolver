@@ -1,4 +1,6 @@
-package cn.weiyinfu.rubik.cube;
+package cn.weiyinfu.rubik.legacy;
+
+import cn.weiyinfu.rubik.cube.Cube;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -7,6 +9,8 @@ import java.util.Set;
 
 /*
  * 给一个初始状态，计算魔方有多少种状态
+ *
+ * 这个类只局限于正方体，可以使用TableSolver计算状态总数
  * */
 public class CubeStateCount {
     void push(Cube c, Set<String> se, Queue<Cube> q) {

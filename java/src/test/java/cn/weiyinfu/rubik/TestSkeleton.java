@@ -2,10 +2,15 @@ package cn.weiyinfu.rubik;
 
 import cn.weiyinfu.rubik.diamond.DisplaceFinder;
 import cn.weiyinfu.rubik.diamond.Skeleton;
+import cn.weiyinfu.rubik.diamond.TableSolver;
 import cn.weiyinfu.rubik.diamond.TwelveState;
 import junit.framework.TestCase;
 
 import java.util.Arrays;
+import java.util.Random;
+import java.util.stream.Collectors;
+
+import static cn.weiyinfu.rubik.diamond.Linalg.displaceMultiply;
 
 public class TestSkeleton extends TestCase {
     public void testSkeleton() {
@@ -80,5 +85,32 @@ public class TestSkeleton extends TestCase {
             }
             System.out.println();
         }
+    }
+
+    public void testTableSolver() {
+//        var x = new TableSolver(3);
+//        var y = x.newStart();
+//        Random r = new Random();
+//        for (int i = 0; i < 10000; i++) {
+//            var opInd = r.nextInt(x.operations.size());
+//            y = displaceMultiply(y, x.operations.get(opInd).displace);
+//        }
+//
+//        System.out.println("打乱之后" + Arrays.toString(y));
+//
+//        var yy = x.solve(y);
+//        var ops = yy.stream().map(i -> x.operations.get(i).name).collect(Collectors.joining(","));
+//        System.out.println("操作方法:" + ops);
+//        var z = y;
+//        for (var i : yy) {
+//            z = displaceMultiply(z, x.operations.get(i).displace);
+//        }
+//        System.out.println("操作之后:" + Arrays.toString(z));
+//        var stateDesc = Arrays.stream(y)
+//                .mapToObj(i -> "rgby".substring(i, i + 1))
+//                .collect(Collectors.joining("-"));
+//        System.out.println(stateDesc);
+//        var ans = x.solve(stateDesc);
+//        System.out.println(ans);
     }
 }

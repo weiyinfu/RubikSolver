@@ -7,7 +7,7 @@ import static java.lang.Math.PI;
 
 public class DisplaceFinder {
     TwelveState stateManager = new TwelveState();
-    Skeleton skeleton;
+    public Skeleton skeleton;
 
     class Node {
         V3 position;

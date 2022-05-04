@@ -36,7 +36,7 @@ public class Skeleton {
     public Map<Integer, FacePoint> facePoints = new HashMap<>();
     int n;//阶数
     public int totalFace;//总面数
-    int perFace;//每个面的面数
+    public int perFace;//每个面的面数
     //四个面的坐标
     V3 left;
     V3 right;

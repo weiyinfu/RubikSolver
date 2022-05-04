@@ -154,4 +154,13 @@ public class Linalg {
         }
         return ans;
     }
+
+    public static int[] displaceReverse(int[] displace) {
+        //求置换的逆元
+        var a = new int[displace.length];
+        for (int i = 0; i < a.length; i++) {
+            a[displace[i]] = i;
+        }
+        return a;
+    }
 }

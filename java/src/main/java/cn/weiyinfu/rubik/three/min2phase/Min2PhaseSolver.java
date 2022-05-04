@@ -48,7 +48,7 @@ public int getN() {
 }
 
 public static void main(String[] args) {
-    Solver s = new Min2PhaseSolver();
+    var s = new Min2PhaseSolver();
 //    String question = "grbwwygywygwwgbyywogbrrrbggooygbbrowroybybrwgborrowoyo";
     String question = "bwoywwrwwybggbygwoyrrrobwoybrwrgrbyggyogygwgogoyggbrbb";
     System.out.println(question.length());
