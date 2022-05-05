@@ -5,6 +5,10 @@ import junit.framework.TestCase;
 import cn.weiyinfu.rubik.three.min2phase.Min2PhaseSolver;
 import cn.weiyinfu.rubik.two.TableSolver;
 
+import java.util.Arrays;
+import java.util.Random;
+import java.util.TreeMap;
+
 public class TestCube extends TestCase {
     public void testMiniCube() {
         Cube c = new Cube(2);
@@ -59,9 +63,23 @@ public class TestCube extends TestCase {
 
     public void testCube() {
         Cube c = new Cube(2);
-        c.go("左下2");
-        System.out.println(c);
-        c = c.regular();
+        Random r = new Random();
+        for (int i = 0; i < 1000; i++) {
+            int ind = r.nextInt(3);
+            c.go(ind, 1);
+        }
+        int[][] ma = new int[6][6];
+        for (int i = 0; i < 6; i++) {
+            for (int j = 0; j < 2; j++) {
+                for (int k = 0; k < 2; k++) {
+                    var x = c.colors[i][j][k];
+                    ma[x][i ]++;
+                }
+            }
+        }
+        for (int i = 0; i < ma.length; i++) {
+            System.out.println(i + " => " + Arrays.toString(ma[i]));
+        }
         System.out.println(c);
     }
 

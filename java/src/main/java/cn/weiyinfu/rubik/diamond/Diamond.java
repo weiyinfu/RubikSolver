@@ -1,29 +1,55 @@
 package cn.weiyinfu.rubik.diamond;
 
-public class Diamond {
-    public int n;//四面体魔方的阶数
-    public int[][] faces;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
-    /**
-     * 四个面：正面（0），左面（1），右面（2），下面（3）
-     * 四个角：上面（0），左面（1），右面（2），后面（3）
-     * 旋转的时候使用左手定则，大拇指指向角的方向
-     * 操作种数：n-1+n*(n-1),n-1表示底部操作，n*(n-1)表示n个角，每个角有n-1层可以动。
-     */
-    public Diamond(int n) {
+public class Diamond implements ColorString.ColorMap, Provider {
+    protected final DisplaceFinder finder;
+    private final int n;
+
+    Diamond(int n) {
         this.n = n;
-        var faceCount = 0;
-        for (int i = 0; i < n; i++) {
-            faceCount += (i * 2) + 1;
+        this.finder = new DisplaceFinder(n);
+    }
+
+    @Override
+    public Map<String, Integer> getColorMap(String s) {
+        var perFace = finder.skeleton.perFace;
+        var colorMap = new TreeMap<String, Integer>();
+        colorMap.put(s.charAt(2 * n - 2) + "", 0);
+        colorMap.put(s.charAt(perFace) + "", 1);
+        colorMap.put(s.charAt(perFace * 2) + "", 2);
+        //找到对面的那个小块
+        for (var i = 0; i < s.length(); i++) {
+            var k = s.substring(i, i + 1);
+            if (colorMap.containsKey(k)) {
+                continue;
+            }
+            colorMap.put(k, 3);
+            break;
         }
-        faces = new int[n][faceCount];
+        return colorMap;
     }
 
-    void op(int point, int layer) {
-        //移动以point角为中心的layer层
-
+    @Override
+    public int[] newStart() {
+        var totalFace = finder.skeleton.totalFace;
+        var perFace = finder.skeleton.perFace;
+        var a = new int[totalFace];
+        for (int i = 0; i < a.length; i++) {
+            a[i] = i / perFace;
+        }
+        return a;
     }
-    void down(int layer){
-        //移动底部的几层
+
+    @Override
+    public List<Operation> getOperations() {
+        return OperationList.fromMap(finder.getOperations());
+    }
+
+    @Override
+    public int[] parseState(String colorString) {
+        return ColorString.string2displace(colorString, this);
     }
 }

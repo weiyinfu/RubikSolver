@@ -6,6 +6,9 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.TreeMap;
 
+/*
+ * 正方体魔方的置换求解器
+ * */
 public class DisplaceFinderCube {
     public final Map<String, int[]> operations;
 

@@ -28,18 +28,15 @@ public class TwelveState {
     public Node[] nodes;
 
     public class Node {
-        public int[] a = new int[4];//0,1,2,3
+        public int[] a;
+        int id;
 
+        Node(int[] a) {
+            this.a = a;
+        }
 
         Node apply(int op) {
-            int[] displace = ops[op];
-            int[] a = new int[this.a.length];
-            for (int i = 0; i < a.length; i++) {
-                a[i] = this.a[displace[i]];
-            }
-            Node no = new Node();
-            no.a = a;
-            return no;
+            return new Node(Linalg.displaceMultiply(a, ops[op]));
         }
 
         String tos() {
@@ -47,23 +44,13 @@ public class TwelveState {
         }
     }
 
-    class NodeWrapper {
-        private final int id;
-        private final Node node;
-
-        NodeWrapper(int id, Node node) {
-            this.id = id;
-            this.node = node;
-        }
-    }
-
     public TwelveState() {
         Queue<Node> q = new LinkedList<>();
-        Node initNode = new Node();
-        initNode.a = new int[]{0, 1, 2, 3};
+        Node initNode = new Node(Linalg.arange(4));
+        initNode.id = 0;
         q.add(initNode);
-        HashMap<String, NodeWrapper> visited = new HashMap<>();
-        visited.put(initNode.tos(), new NodeWrapper(0, initNode));
+        HashMap<String, Node> visited = new HashMap<>();
+        visited.put(initNode.tos(), initNode);
         while (!q.isEmpty()) {
             Node x = q.poll();
             for (int i = 0; i < ops.length; i++) {
@@ -71,7 +58,8 @@ public class TwelveState {
                 if (visited.containsKey(nex.tos())) {
                     continue;
                 }
-                visited.put(nex.tos(), new NodeWrapper(visited.size(), nex));
+                nex.id = visited.size();
+                visited.put(nex.tos(), nex);
                 q.add(nex);
             }
         }
@@ -79,9 +67,9 @@ public class TwelveState {
         stateTable = new int[visited.size()][ops.length];
         nodes = new Node[visited.size()];
         for (var i : visited.values()) {
-            nodes[i.id] = i.node;
+            nodes[i.id] = i;
             for (int op = 0; op < ops.length; op++) {
-                var nex = i.node.apply(op);
+                var nex = i.apply(op);
                 stateTable[i.id][op] = visited.get(nex.tos()).id;
             }
         }

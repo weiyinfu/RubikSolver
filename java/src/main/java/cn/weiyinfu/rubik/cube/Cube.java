@@ -15,7 +15,7 @@ public class Cube {
     //颜色常量
     final public static String COLOR = "wgrbyo";
     // opsite[i] is the opsite face of the ith face,6个面的对面
-    final static int opsite[] = {4, 3, 5, 1, 0, 2};
+    final public static int opsite[] = {4, 3, 5, 1, 0, 2};
 
 
     int N;//魔方的阶数

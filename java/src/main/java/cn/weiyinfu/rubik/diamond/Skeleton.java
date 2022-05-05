@@ -32,8 +32,8 @@ public class Skeleton {
         }
     }
 
-    public List<V3> a = new ArrayList<>();//骨骼点列表
-    public Map<Integer, FacePoint> facePoints = new HashMap<>();
+    List<V3> a = new ArrayList<>();//骨骼点列表
+    Map<Integer, FacePoint> facePoints = new HashMap<>();
     int n;//阶数
     public int totalFace;//总面数
     public int perFace;//每个面的面数

@@ -1,5 +1,7 @@
 package cn.weiyinfu.rubik.diamond;
 
+import java.util.Random;
+
 /*
  * 线性代数运算集合
  * */
@@ -132,7 +134,7 @@ public class Linalg {
 
     public static int[] displaceMultiply(int[] A, int[] B) {
         if (A.length != B.length) {
-            throw new RuntimeException("A and B is not match");
+            throw new RuntimeException(String.format("A and B is not match:A.length=%s,B.length=%s", A.length, B.length));
         }
         int[] ans = new int[A.length];
         for (int i = 0; i < A.length; i++) {
@@ -163,4 +165,18 @@ public class Linalg {
         }
         return a;
     }
+
+    static Random r = new Random();
+
+    public static int[] randomDisplace(int n) {
+        var a = arange(n);
+        for (int i = 0; i < a.length; i++) {
+            var ind = i + r.nextInt(a.length - i);
+            var temp = a[i];
+            a[i] = a[ind];
+            a[ind] = temp;
+        }
+        return a;
+    }
+
 }

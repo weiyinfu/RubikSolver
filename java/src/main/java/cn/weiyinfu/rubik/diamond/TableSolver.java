@@ -3,9 +3,7 @@ package cn.weiyinfu.rubik.diamond;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -13,23 +11,16 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.stream.Collectors;
 
 import static cn.weiyinfu.rubik.diamond.Linalg.displaceMultiply;
-import static cn.weiyinfu.rubik.diamond.Linalg.displaceReverse;
 
 /*
  * 使用zobrist函数作为哈希函数，存在极小的概率发生冲突导致问题求解错误
  * */
-public class TableSolver {
+public class TableSolver implements Solver {
     Logger log = LoggerFactory.getLogger(TableSolver.class);
     public final List<Operation> operations;
     long[][] zob;
     public Map<Long, Integer> table;
     Provider provider;
-
-    public class Operation {
-        public String name;
-        public int[] displace;
-        public int[] reverseDisplace;
-    }
 
     class Node {
         public int[] a;
@@ -68,12 +59,6 @@ public class TableSolver {
             }
             return new Node(a, hash, x.layer + 1);
         }
-    }
-
-    public interface Provider {
-        int[] newStart();
-
-        Map<String, int[]> getOperations();
     }
 
     long calculateHash(int[] a) {
@@ -122,7 +107,7 @@ public class TableSolver {
 
     void saveTable(Map<Long, Integer> ma, Path tablePath) {
         try (var o = Files.newOutputStream(tablePath);
-             var cout = new DataOutputStream(o);
+             var cout = new DataOutputStream(new BufferedOutputStream(o));
         ) {
             for (var i : ma.entrySet()) {
                 var k = i.getKey();
@@ -136,7 +121,7 @@ public class TableSolver {
     }
 
     Map<Long, Integer> loadTable(Path tablePath) {
-        try (var cin = new DataInputStream(Files.newInputStream(tablePath))) {
+        try (var cin = new DataInputStream(new BufferedInputStream(Files.newInputStream(tablePath)))) {
             var ma = new TreeMap<Long, Integer>();
             while (true) {
                 try {
@@ -155,22 +140,8 @@ public class TableSolver {
         }
     }
 
-    public int[] string2displace(String s) {
-        s = s.replaceAll("[^a-zA-Z]", "");
-        Map<Character, Integer> ma = new TreeMap<>();
-        for (char i : s.toCharArray()) {
-            if (!ma.containsKey(i)) {
-                ma.put(i, ma.size());
-            }
-        }
-        var a = new int[s.length()];
-        for (int i = 0; i < a.length; i++) {
-            a[i] = ma.get(s.charAt(i));
-        }
-        return a;
-    }
 
-    public String opids2String(List<Integer> opIds) {
+    String opids2String(List<Integer> opIds) {
         return opIds.stream()
                 .map(x -> operations.get(x).name)
                 .collect(Collectors.joining(","));
@@ -178,9 +149,13 @@ public class TableSolver {
     }
 
     public String solve(String s) {
-        var a = string2displace(s);
+        var a = provider.parseState(s);
         var opIds = solve(a);
         return opids2String(opIds);
+    }
+
+    public String solveUseString(int[] a) {
+        return opids2String(solve(a));
     }
 
     public List<Integer> solve(int[] a) {
@@ -201,18 +176,7 @@ public class TableSolver {
 
     public TableSolver(Path tablePath, Provider p) {
         this.provider = p;
-        operations = provider.getOperations()
-                .entrySet()
-                .stream()
-                .map(x -> {
-                    var o = new Operation();
-                    o.name = x.getKey();
-                    o.displace = x.getValue();
-                    o.reverseDisplace = displaceReverse(o.displace);
-                    return o;
-                })
-                .sorted(Comparator.comparing(x -> x.name))
-                .collect(Collectors.toList());
+        operations = provider.getOperations();
         if (operations.size() == 0) {
             throw new RuntimeException("operations is empty");
         }

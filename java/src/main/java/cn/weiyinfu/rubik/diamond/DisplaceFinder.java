@@ -5,6 +5,9 @@ import java.util.*;
 import static cn.weiyinfu.rubik.diamond.Linalg.*;
 import static java.lang.Math.PI;
 
+/**
+ * 四面体魔方的置换求解器
+ */
 public class DisplaceFinder {
     TwelveState stateManager = new TwelveState();
     public Skeleton skeleton;
@@ -26,7 +29,7 @@ public class DisplaceFinder {
         }
     }
 
-    public class Diamond {
+    class Diamond {
         List<Node> a = new ArrayList<>();
 
         public Diamond rotate(int face, int layer, boolean turnTop) {

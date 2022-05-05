@@ -1,4 +1,4 @@
-package cn.weiyinfu.rubik;
+package cn.weiyinfu.rubik.diamond;
 
 import cn.weiyinfu.rubik.diamond.Linalg;
 import cn.weiyinfu.rubik.diamond.V3;
