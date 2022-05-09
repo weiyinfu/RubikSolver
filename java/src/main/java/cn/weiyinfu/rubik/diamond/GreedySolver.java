@@ -1,0 +1,173 @@
+package cn.weiyinfu.rubik.diamond;
+
+import java.nio.file.Path;
+import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.stream.Collectors;
+
+import static cn.weiyinfu.rubik.diamond.Displace.mul;
+
+public class GreedySolver extends HalfSolver {
+    public GreedySolver(Path tablePath, Provider p, int maxLayer) {
+        super(tablePath, p, maxLayer);
+    }
+
+    int howGoodPrefix(int[] a) {
+        //只评价前缀有多少个符合要求
+        var s = 0;
+        for (int i = 0; i < a.length; i++) {
+            if (a[i] == i) {
+                s++;
+            } else {
+                break;
+            }
+        }
+        return s;
+    }
+
+    int howGoodSuffix(int[] a) {
+        //只评价前缀有多少个符合要求
+        var s = 0;
+        for (int i = a.length - 1; i >= 0; i--) {
+            if (a[i] == i) {
+                s++;
+            } else {
+                break;
+            }
+        }
+        return s;
+    }
+
+    int howGood(int[] a) {
+        //判断a到目标状态的距离，这种评价方式梯度不够明确
+        var s = 0;
+        for (int i = 0; i < a.length; i++) {
+            if (a[i] == i) {
+                s++;
+            }
+        }
+        return s;
+    }
+
+    @Override
+    List<Integer> solveSimple(int[] a) {
+        //反转数组
+        var opList = new ArrayList<Integer>();
+        var target = provider.newStart();
+        int cnt = 0;
+        while (!Arrays.equals(target, a)) {
+            cnt++;
+            if (cnt > 100000) {
+                throw new RuntimeException("too much steps");
+            }
+            var k = calculateHash(a);
+            var no = table.get(k);
+            if (no == null) {
+                throw new RuntimeException("illegal state");
+            }
+            var op = operations.get(no.prevOp);
+            a = mul(a, op.reverseDisplace);
+            opList.add(no.prevOp);
+        }
+        var ans = new ArrayList<Integer>();
+        for (var i = opList.size() - 1; i >= 0; i--) {
+            ans.add(opList.get(i));
+        }
+        return ans;
+    }
+
+    List<Integer> findGood(int[] a) {
+        //寻找使得a变得最好的着法
+        int maxGood = -1;
+        List<int[]> bestDis = new ArrayList<>();
+        for (var i : table.values()) {
+            if (i.layer == 0) continue;//如果是原地不动，那是万万不可的
+            var x = Displace.mul(a, i.a);
+            int v = howGoodPrefix(x);
+            if (v > maxGood) {
+                maxGood = v;
+                bestDis.clear();
+                bestDis.add(i.a);
+            } else if (v == maxGood) {
+                bestDis.add(i.a);
+            }
+        }
+        var best = bestDis.get(Displace.r.nextInt(bestDis.size()));
+        return solveSimple(best);
+    }
+
+
+    @Override
+    public List<Integer> solve(int[] a) {
+        //贪心法搜索答案
+        var target = provider.newStart();
+        var now = a;
+        List<Integer> ops = new ArrayList<>();
+        while (!Arrays.equals(target, now)) {
+            var best = findGood(now);
+            //执行最佳决策，更改now的状态
+            for (var op : best) {
+                var o = operations.get(op).displace;
+                now = Displace.mul(now, o);
+            }
+            if (best.size() == 0) {
+                throw new RuntimeException("I cannot solve this problem:" + Arrays.toString(now));
+            }
+            ops.addAll(best);
+            if (ops.size() > 10000) {
+                throw new RuntimeException("I cannot solve it:" + Arrays.toString(a));
+            }
+            System.out.printf("已执行%s步，当前状态%s，当前best:%s，good=%s\n", ops.size(), Arrays.toString(now), best.size(), howGoodPrefix(now));
+//            try {
+//                Thread.sleep(1000);
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+        }
+        return ops;
+    }
+
+    Map<Long, Node> buildTables() {
+        var startState = provider.newStart();
+        var start = new Node(startState, calculateHash(startState), 0, 0);
+        Queue<Node> q = new ConcurrentLinkedQueue<>();
+        q.add(start);
+        var visited = new ConcurrentSkipListMap<Long, Node>();
+        visited.put(start.hash, start);
+        long beginTime = System.currentTimeMillis();
+        var dis = operations.stream().map(x -> new Op(x.displace)).collect(Collectors.toList());
+        var layerCountMap = new TreeMap<Integer, Integer>();
+        var lastLayer = 0;
+        while (!q.isEmpty()) {
+            if (visited.size() % 10000 == 0) {
+                log.info(String.format("visited:%s,queue:%s,layer=%s\n", visited.size(), q.size(), lastLayer));
+            }
+            var it = q.poll();
+            if (it == null) {
+                continue;
+            }
+            if (it.layer >= maxLayer) {
+                continue;
+            }
+            lastLayer = it.layer;
+            for (var i = 0; i < dis.size(); i++) {
+                var op = dis.get(i);
+                var nex = op.apply(it);
+                nex.prevOp = i;
+                if (!visited.containsKey(nex.hash)) {
+                    layerCountMap.put(nex.layer, layerCountMap.getOrDefault(nex.layer, 0) + 1);
+                    visited.put(nex.hash, nex);
+                    q.add(nex);
+                }
+            }
+        }
+        long timeUsed = System.currentTimeMillis() - beginTime;
+        log.info(String.format("耗时%s秒,tableSize=%s\n", timeUsed / 1000, visited.size()));
+        for (var i : layerCountMap.entrySet()) {
+            log.info(String.format("%s=>%s\n", i.getKey(), i.getValue()));
+        }
+        return visited;
+    }
+
+}

@@ -1,9 +1,12 @@
-package cn.weiyinfu.rubik.diamond;
+package cn.weiyinfu.rubik.diamond.obj;
+
+import cn.weiyinfu.rubik.diamond.Operation;
+import cn.weiyinfu.rubik.diamond.OperationList;
 
 import java.util.List;
 
 public class DiamondSimple extends Diamond {
-    DiamondSimple(int n) {
+    public DiamondSimple(int n) {
         super(n);
     }
 

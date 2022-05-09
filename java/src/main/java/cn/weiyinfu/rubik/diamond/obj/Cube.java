@@ -1,14 +1,16 @@
-package cn.weiyinfu.rubik.diamond;
+package cn.weiyinfu.rubik.diamond.obj;
 
+import cn.weiyinfu.rubik.diamond.*;
+import cn.weiyinfu.rubik.diamond.finder.DisplaceFinderCube;
 import cn.weiyinfu.rubik.two.Mini;
 
 import java.util.*;
 
 public class Cube implements Provider, ColorString.ColorMap {
-    private final DisplaceFinderCube finder;
-    private final int n;
+    protected final DisplaceFinderCube finder;
+    protected final int n;
 
-    Cube(int n) {
+    public Cube(int n) {
         this.n = n;
         this.finder = new DisplaceFinderCube(n);
     }

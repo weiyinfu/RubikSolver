@@ -2,8 +2,6 @@ package cn.weiyinfu.rubik.diamond;
 
 import java.util.*;
 
-import static cn.weiyinfu.rubik.diamond.Linalg.displaceMultiply;
-
 /*
  * 给定一个求解器，测试这个求解器是否正确
  * */
@@ -20,21 +18,24 @@ public class SolverPlayer {
     }
 
     int[] getShuffleState(int n) {
-        var x = p.newStart();
+        return getShuffleState(n, p.newStart());
+    }
+
+    int[] getShuffleState(int n, int[] start) {
         Random r = new Random();
         List<Integer> opList = new ArrayList<>(n);
         for (var i = 0; i < n; i++) {
             var ind = r.nextInt(operations.size());
             opList.add(ind);
         }
-        return executeOps(x, opList, false);
+        return executeOps(start, opList, false);
     }
 
     int[] executeOps(int[] a, List<Integer> ops, boolean reverse) {
         for (int op : ops) {
             var o = operations.get(op);
             var displace = reverse ? o.reverseDisplace : o.displace;
-            a = displaceMultiply(a, displace);
+            a = Displace.mul(a, displace);
         }
         return a;
     }
@@ -58,10 +59,16 @@ public class SolverPlayer {
 
     void testSolverMultiTimes(int shuffleCount, int n) {
         var right = 0;
+
         for (int i = 0; i < n; i++) {
-            var res = testSolver(shuffleCount);
-            if (res) {
-                right++;
+            try {
+
+                var res = testSolver(shuffleCount);
+                if (res) {
+                    right++;
+                }
+            } catch (Exception e) {
+
             }
         }
         System.out.println(String.format("正确率：%s/%s", right, n));
@@ -79,7 +86,7 @@ public class SolverPlayer {
 
         var ids = new ArrayList<>(aSet);
         //数组下标置换
-        var dis = Linalg.randomDisplace(ids.size());
+        var dis = Displace.randomDisplace(ids.size());
         var colors = new StringBuilder();
         for (int j : a) {
             colors.append((char) (dis[ids.get(j)] + 'a'));

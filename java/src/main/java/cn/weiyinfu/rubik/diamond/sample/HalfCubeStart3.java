@@ -1,10 +1,10 @@
 package cn.weiyinfu.rubik.diamond.sample;
 
-import cn.weiyinfu.rubik.diamond.solvers.TableSolverDiamond;
+import cn.weiyinfu.rubik.diamond.solvers.HalfSolverCubeStart;
 
-public class DiamondThree {
+public class HalfCubeStart3 {
     public static void main(String[] args) {
-        var x = new TableSolverDiamond(3);
+        var x = new HalfSolverCubeStart(3, 9);
         System.out.println(x.table.size());
     }
 }

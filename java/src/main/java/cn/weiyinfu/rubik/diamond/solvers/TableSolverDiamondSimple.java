@@ -1,4 +1,7 @@
-package cn.weiyinfu.rubik.diamond;
+package cn.weiyinfu.rubik.diamond.solvers;
+
+import cn.weiyinfu.rubik.diamond.TableSolver;
+import cn.weiyinfu.rubik.diamond.obj.DiamondSimple;
 
 import java.nio.file.Paths;
 

@@ -1,19 +1,18 @@
 package cn.weiyinfu.rubik.legacy;
 
-import cn.weiyinfu.rubik.diamond.DisplaceFinder;
+import cn.weiyinfu.rubik.diamond.Displace;
+import cn.weiyinfu.rubik.diamond.finder.DisplaceFinderDiamond;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import static cn.weiyinfu.rubik.diamond.Linalg.displaceMultiply;
-
 /*
  * 使用string作为去重工具内存消耗太大
  * */
 public class DiamondBroadSearch {
-    DisplaceFinder finder;
+    DisplaceFinderDiamond finder;
     int n;
 
     class Node {
@@ -25,7 +24,7 @@ public class DiamondBroadSearch {
 
         Node apply(int[] displace) {
             Node ans = new Node(this.a.length);
-            ans.a = displaceMultiply(this.a, displace);
+            ans.a = Displace.mul(this.a, displace);
             return ans;
         }
 
@@ -69,7 +68,7 @@ public class DiamondBroadSearch {
 
     DiamondBroadSearch(int n) {
         this.n = n;
-        finder = new DisplaceFinder(n);
+        finder = new DisplaceFinderDiamond(n);
         var start = newStartNode();
         Queue<Node> q = new LinkedList<>();
         q.add(start);

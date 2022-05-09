@@ -1,16 +1,19 @@
-package cn.weiyinfu.rubik.diamond;
+package cn.weiyinfu.rubik.diamond.obj;
+
+import cn.weiyinfu.rubik.diamond.*;
+import cn.weiyinfu.rubik.diamond.finder.DisplaceFinderDiamond;
 
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
 public class Diamond implements ColorString.ColorMap, Provider {
-    protected final DisplaceFinder finder;
+    protected final DisplaceFinderDiamond finder;
     private final int n;
 
-    Diamond(int n) {
+    public Diamond(int n) {
         this.n = n;
-        this.finder = new DisplaceFinder(n);
+        this.finder = new DisplaceFinderDiamond(n);
     }
 
     @Override

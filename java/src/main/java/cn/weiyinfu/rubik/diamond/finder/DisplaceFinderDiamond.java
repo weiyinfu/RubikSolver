@@ -1,4 +1,7 @@
-package cn.weiyinfu.rubik.diamond;
+package cn.weiyinfu.rubik.diamond.finder;
+
+import cn.weiyinfu.rubik.diamond.Displace;
+import cn.weiyinfu.rubik.diamond.V3;
 
 import java.util.*;
 
@@ -8,8 +11,8 @@ import static java.lang.Math.PI;
 /**
  * 四面体魔方的置换求解器
  */
-public class DisplaceFinder {
-    TwelveState stateManager = new TwelveState();
+public class DisplaceFinderDiamond {
+    PutType stateManager = new PutTypeDiamond();
     public Skeleton skeleton;
 
     class Node {
@@ -29,7 +32,7 @@ public class DisplaceFinder {
         }
     }
 
-    class Diamond {
+    public class Diamond {
         List<Node> a = new ArrayList<>();
 
         public Diamond rotate(int face, int layer, boolean turnTop) {
@@ -165,7 +168,7 @@ public class DisplaceFinder {
         var x = NewStartNode();
         var displace = x.rotate(2, layerCount, true)
                 .getFaces();
-        return displacePower(displace, 2);
+        return Displace.power(displace, 2);
     }
 
     int[] right(int layerCount) {
@@ -173,7 +176,7 @@ public class DisplaceFinder {
         var x = NewStartNode()
                 .rotate(0, layerCount, true)
                 .getFaces();
-        return displacePower(x, 2);
+        return Displace.power(x, 2);
     }
 
     int[] back(int layerCount) {
@@ -181,7 +184,7 @@ public class DisplaceFinder {
         var x = NewStartNode()
                 .rotate(1, layerCount, true)
                 .getFaces();
-        return displacePower(x, 2);
+        return Displace.power(x, 2);
     }
 
     public Map<String, int[]> getOperations() {
@@ -208,7 +211,7 @@ public class DisplaceFinder {
         return operations;
     }
 
-    public DisplaceFinder(int n) {
+    public DisplaceFinderDiamond(int n) {
         this.skeleton = new Skeleton(n);
     }
 }

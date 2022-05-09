@@ -11,25 +11,33 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.stream.Collectors;
 
-/*
- * 使用zobrist函数作为哈希函数，存在极小的概率发生冲突导致问题求解错误
- * */
-public class TableSolver implements Solver {
-    Logger log = LoggerFactory.getLogger(TableSolver.class);
+import static cn.weiyinfu.rubik.diamond.Displace.mul;
+
+/**
+ * 给定一个魔方，只记录若干步之后的全部状态
+ * 当求解的时候，扫描全部置换
+ */
+
+
+public class HalfSolver implements Solver {
+    final int maxLayer;
+    Logger log = LoggerFactory.getLogger(HalfSolver.class);
     public final List<Operation> operations;
     long[][] zob;
-    public Map<Long, Integer> table;
+    public Map<Long, Node> table;
     Provider provider;
 
-    class Node {
+    public static class Node implements Serializable {
         public int[] a;
         long hash;
         int layer;//当前是第几层
+        int prevOp;
 
-        Node(int[] a, long hash, int layer) {
+        Node(int[] a, long hash, int layer, int prevOp) {
             this.a = a;
             this.hash = hash;
             this.layer = layer;
+            this.prevOp = prevOp;
         }
     }
 
@@ -56,7 +64,7 @@ public class TableSolver implements Solver {
                 a[ind] = x.a[displace[ind]];
                 hash ^= zob[ind][a[ind]];
             }
-            return new Node(a, hash, x.layer + 1);
+            return new Node(a, hash, x.layer + 1, 0);
         }
     }
 
@@ -68,30 +76,36 @@ public class TableSolver implements Solver {
         return s;
     }
 
-    Map<Long, Integer> buildTables() {
+    Map<Long, Node> buildTables() {
         var startState = provider.newStart();
-        var start = new Node(startState, calculateHash(startState), 0);
+        var start = new Node(startState, calculateHash(startState), 0, 0);
         Queue<Node> q = new ConcurrentLinkedQueue<>();
         q.add(start);
-        var visited = new ConcurrentSkipListMap<Long, Integer>();
-        visited.put(start.hash, 0);
+        var visited = new ConcurrentSkipListMap<Long, Node>();
+        visited.put(start.hash, start);
         long beginTime = System.currentTimeMillis();
         var dis = operations.stream().map(x -> new Op(x.reverseDisplace)).collect(Collectors.toList());
         var layerCountMap = new TreeMap<Integer, Integer>();
+        var lastLayer = 0;
         while (!q.isEmpty()) {
             if (visited.size() % 10000 == 0) {
-                log.info(String.format("visited:%s,queue:%s\n", visited.size(), q.size()));
+                log.info(String.format("visited:%s,queue:%s,layer=%s\n", visited.size(), q.size(), lastLayer));
             }
             var it = q.poll();
             if (it == null) {
                 continue;
             }
+            if (it.layer >= maxLayer) {
+                continue;
+            }
+            lastLayer = it.layer;
             for (var i = 0; i < dis.size(); i++) {
                 var op = dis.get(i);
                 var nex = op.apply(it);
+                nex.prevOp = i;
                 if (!visited.containsKey(nex.hash)) {
                     layerCountMap.put(nex.layer, layerCountMap.getOrDefault(nex.layer, 0) + 1);
-                    visited.put(nex.hash, i);
+                    visited.put(nex.hash, nex);
                     q.add(nex);
                 }
             }
@@ -104,33 +118,19 @@ public class TableSolver implements Solver {
         return visited;
     }
 
-    void saveTable(Map<Long, Integer> ma, Path tablePath) {
+    void saveTable(Map<Long, Node> ma, Path tablePath) {
         try (var o = Files.newOutputStream(tablePath);
-             var cout = new DataOutputStream(new BufferedOutputStream(o));
+             var cout = new ObjectOutputStream(new BufferedOutputStream(o));
         ) {
-            for (var i : ma.entrySet()) {
-                var k = i.getKey();
-                var v = i.getValue();
-                cout.writeLong(k);
-                cout.writeByte(v);
-            }
+            cout.writeObject(ma);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
-    Map<Long, Integer> loadTable(Path tablePath) {
-        try (var cin = new DataInputStream(new BufferedInputStream(Files.newInputStream(tablePath)))) {
-            var ma = new TreeMap<Long, Integer>();
-            while (true) {
-                try {
-                    var k = cin.readLong();
-                    var v = cin.readByte();
-                    ma.put(k, (int) v);
-                } catch (IOException e) {
-                    break;
-                }
-            }
+    Map<Long, Node> loadTable(Path tablePath) {
+        try (var cin = new ObjectInputStream(new BufferedInputStream(Files.newInputStream(tablePath)))) {
+            Map<Long, Node> ma = (Map<Long, Node>) cin.readObject();
             log.info("加载成功" + ma.size());
             return ma;
         } catch (Exception e) {
@@ -153,11 +153,7 @@ public class TableSolver implements Solver {
         return opids2String(opIds);
     }
 
-    public String solveUseString(int[] a) {
-        return opids2String(solve(a));
-    }
-
-    public List<Integer> solve(int[] a) {
+    List<Integer> solveSimple(int[] a) {
         var opList = new ArrayList<Integer>();
         var target = provider.newStart();
         int cnt = 0;
@@ -167,19 +163,44 @@ public class TableSolver implements Solver {
                 throw new RuntimeException("too much steps");
             }
             var k = calculateHash(a);
-            var opId = table.get(k);
-            if (opId == null) {
+            var no = table.get(k);
+            if (no == null) {
                 throw new RuntimeException("illegal state");
             }
-            var op = operations.get(opId);
-            a = Displace.mul(a, op.displace);
-            opList.add(opId);
+            var op = operations.get(no.prevOp);
+            a = mul(a, op.displace);
+            opList.add(no.prevOp);
         }
         return opList;
     }
 
-    public TableSolver(Path tablePath, Provider p) {
+    public List<Integer> solve(int[] a) {
+        Node[] pair = null;
+        var code = calculateHash(a);
+        if (table.containsKey(code)) {
+            return solveSimple(a);
+        }
+        for (var i : table.values()) {
+            var x = Displace.divFast(a, i.a);
+            var y = calculateHash(x);
+            if (table.containsKey(y)) {
+                //如果包含这个key，则找到了答案
+                pair = new Node[]{i, table.get(y)};
+                break;
+            }
+        }
+        if (pair == null) {
+            throw new RuntimeException("I cannot solve this problem:" + Arrays.toString(a));
+        }
+        var one = solveSimple(pair[0].a);
+        var two = solveSimple(pair[1].a);
+        one.addAll(two);
+        return one;
+    }
+
+    public HalfSolver(Path tablePath, Provider p, int maxLayer) {
         this.provider = p;
+        this.maxLayer = maxLayer;
         operations = provider.getOperations();
         if (operations.size() == 0) {
             throw new RuntimeException("operations is empty");

@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class ColorString {
-    interface ColorMap {
+    public interface ColorMap {
         Map<String, Integer> getColorMap(String s);
     }
 

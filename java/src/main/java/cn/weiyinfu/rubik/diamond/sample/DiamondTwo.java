@@ -1,6 +1,6 @@
 package cn.weiyinfu.rubik.diamond.sample;
 
-import cn.weiyinfu.rubik.diamond.TableSolverDiamond;
+import cn.weiyinfu.rubik.diamond.solvers.TableSolverDiamond;
 
 public class DiamondTwo {
     public static void main(String[] args) {

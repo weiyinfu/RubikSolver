@@ -1,4 +1,4 @@
-package cn.weiyinfu.rubik.diamond;
+package cn.weiyinfu.rubik.diamond.finder;
 
 import junit.framework.TestCase;
 
@@ -29,7 +29,7 @@ public class TestSkeleton extends TestCase {
     }
 
     public void testTwelveState() {
-        var x = new TwelveState();
+        var x = new PutTypeDiamond();
         for (int i = 0; i < x.stateTable.length; i++) {
             System.out.print(Arrays.toString(x.nodes[i].a) + ":");
             for (int j = 0; j < x.stateTable[i].length; j++) {

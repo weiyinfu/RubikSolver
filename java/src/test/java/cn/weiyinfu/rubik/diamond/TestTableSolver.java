@@ -1,9 +1,13 @@
 package cn.weiyinfu.rubik.diamond;
 
+import cn.weiyinfu.rubik.diamond.obj.Cube;
+import cn.weiyinfu.rubik.diamond.obj.CubeStart;
+import cn.weiyinfu.rubik.diamond.obj.DiamondSimple;
+import cn.weiyinfu.rubik.diamond.obj.DiamondSimpleStart;
+import cn.weiyinfu.rubik.diamond.solvers.*;
 import junit.framework.TestCase;
 
 import java.util.Arrays;
-import java.util.stream.Collectors;
 
 public class TestTableSolver extends TestCase {
 
@@ -23,10 +27,53 @@ public class TestTableSolver extends TestCase {
         p.testSolverMultiTimes(1000, 1000);
     }
 
-    public void testSolver() {
+
+    public void testHalfSolverDiamond() {
         SolverPlayer p = new SolverPlayer(
-                new DiamondSimple(3),
-                new TableSolverCube(2));
+                new DiamondSimpleStart(3),
+                new HalfSolverDiamondSimpleStart(3, 11));
+        System.out.println(p.testSolver(1000));
+        p.testSolverMultiTimes(1000, 1000);
+    }
+
+    public void testHalfSolverCube() {
+        SolverPlayer p = new SolverPlayer(
+                new CubeStart(2),
+                new HalfSolverCubeStart(2, 10));
+        System.out.println(p.testSolver(1000));
+        p.testSolverMultiTimes(1000, 1000);
+    }
+
+    public void testGreedySolverCube() {
+        SolverPlayer p = new SolverPlayer(
+                new CubeStart(2),
+                new GreedySolverCubeStart(2, 8));
+        System.out.println(p.testSolver(7));
+        p.testSolverMultiTimes(1000, 1000);
+    }
+
+    public void testGreedySolverCubeOne() {
+        SolverPlayer p = new SolverPlayer(
+                new CubeStart(2),
+                new GreedySolverCubeStart(2, 10));
+        var x = p.getShuffleState(15);
+        System.out.println(Arrays.toString(x));
+        System.out.println(p.testSolver(x));
+    }
+
+    public void testSearchSolverCubeOne() {
+        SolverPlayer p = new SolverPlayer(
+                new CubeStart(2),
+                new SearchSolverCubeStart(2, 7, 2));
+        var x = p.getShuffleState(9);
+        System.out.println(Arrays.toString(x));
+        System.out.println(p.testSolver(x));
+    }
+
+    public void testTableSolverDiamondOne() {
+        SolverPlayer p = new SolverPlayer(
+                new DiamondSimpleStart(3),
+                new TableSolverDiamondSimple(3));
         var state = p.getShuffleState(1000);
         System.out.println(Arrays.toString(state));
         var ans = p.solve(state);
@@ -35,41 +82,39 @@ public class TestTableSolver extends TestCase {
         System.out.println(Arrays.toString(des));
     }
 
-    public void testParseState() {
+    public void testHalfSolverDiamondSimpleStart() {
         SolverPlayer p = new SolverPlayer(
-                new Cube(3),
-                null);
-        p.testParseStateMulti(1000);
+                new DiamondSimpleStart(3),
+                new HalfSolverDiamondSimpleStart(3, 11));
+        var state = p.getShuffleState(1000, Displace.arange(p.operations.get(0).displace.length));
+        System.out.println(Arrays.toString(state));
+        var ans = p.solve(state);
+        System.out.println("Operations:" + ans);
+        var des = p.executeOps(state, ans, false);
+        System.out.println(Arrays.toString(des));
     }
 
-    public void testParseStateCubeOne() {
-        var c = new Cube(3);
-        SolverPlayer p = new SolverPlayer(c, null);
-        System.out.println("testing");
-        System.out.println(p.testParseState());
-    }
-
-    public void testParseStateCubeOne2() {
-        var a = new int[]{4, 3, 0, 0, 5, 1, 4, 0, 2, 2, 1, 4, 3, 5, 3, 4, 5, 5, 2, 2, 3, 1, 1, 0};
-        var x = new Cube(2);
-        System.out.println(a.length);
-        var s = Arrays.stream(a).mapToObj(i -> (char) (i + 'a') + "").collect(Collectors.joining());
-        System.out.println(s);
-        var ans = x.parseState(s);
-        System.out.println(Arrays.toString(ans));
-    }
-
-    public void testParseStateDiamondSimple() {
+    public void testHalfDiamondOne() {
         SolverPlayer p = new SolverPlayer(
-                new DiamondSimple(3),
-                new TableSolverDiamondSimple(3));
-        p.testParseStateMulti(1000);
+                new DiamondSimpleStart(3),
+                new HalfSolverDiamondSimpleStart(3, 11));
+
+        var state = new int[]{17, 16, 20, 19, 4, 32, 21, 12, 22, 9, 23, 3, 34, 0, 1, 15, 14, 13, 18, 11, 2, 30, 31, 25, 28, 10, 27, 35, 33, 29, 6, 8, 5, 24, 7, 26};
+        var ans = p.solve(state);
+        System.out.println("Operations:" + ans);
+        var des = p.executeOps(state, ans, false);
+        System.out.println(Arrays.toString(des));
     }
 
-    public void testParseState2() {
-        var s = "ccabbcaaaababdddddccdddcaaabbbccdbcb";
-        var x = new DiamondSimple(3);
-        var ans = x.parseState(s);
-        System.out.println(Arrays.toString(ans));
+    public void testGreedyDiamondOne() {
+        SolverPlayer p = new SolverPlayer(
+                new DiamondSimpleStart(3),
+                new GreedySolverDiamondSimpleStart(3, 8));
+
+        var state = new int[]{17, 16, 20, 19, 4, 32, 21, 12, 22, 9, 23, 3, 34, 0, 1, 15, 14, 13, 18, 11, 2, 30, 31, 25, 28, 10, 27, 35, 33, 29, 6, 8, 5, 24, 7, 26};
+        var ans = p.solve(state);
+        System.out.println("Operations:" + ans + " " + ans.size());
+        var des = p.executeOps(state, ans, false);
+        System.out.println(Arrays.toString(des));
     }
 }

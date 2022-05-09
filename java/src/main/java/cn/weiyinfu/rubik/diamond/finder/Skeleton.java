@@ -1,4 +1,6 @@
-package cn.weiyinfu.rubik.diamond;
+package cn.weiyinfu.rubik.diamond.finder;
+
+import cn.weiyinfu.rubik.diamond.V3;
 
 import java.util.*;
 

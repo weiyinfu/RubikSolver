@@ -1,4 +1,6 @@
-package cn.weiyinfu.rubik.diamond;
+package cn.weiyinfu.rubik.diamond.finder;
+
+import cn.weiyinfu.rubik.diamond.Displace;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -6,6 +8,8 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 /*
+放置方式类
+
 把四面体放在地上有12种状态（谁着地4种*谁是正面3种），这12种状态
 构成一个图，每个结点有4条边
 
@@ -16,14 +20,9 @@ import java.util.Queue;
 面的表示：左面0，中间1，右面2，下面3
 操作的表示：左面0，中间1，右面2，下面3，操作指的是旋转面而不是旋转尖
  */
-public class TwelveState {
+public class PutType {
+    private final int[][] ops;
     //四种操作：影响状态，0左面，1正面，2右面，3下面，左手定则
-    final int[][] ops = {
-            {0, 2, 3, 1},
-            {3, 1, 0, 2},
-            {1, 3, 2, 0},
-            {2, 0, 1, 3}
-    };
     public int[][] stateTable;
     public Node[] nodes;
 
@@ -36,17 +35,18 @@ public class TwelveState {
         }
 
         Node apply(int op) {
-            return new Node(Linalg.displaceMultiply(a, ops[op]));
+            return new Node(Displace.mul(a, ops[op]));
         }
 
-        String tos() {
+        public String tos() {
             return Arrays.toString(a);
         }
     }
 
-    public TwelveState() {
+    public PutType(int n, int[][] ops) {
+        this.ops = ops;
         Queue<Node> q = new LinkedList<>();
-        Node initNode = new Node(Linalg.arange(4));
+        Node initNode = new Node(Displace.arange(n));
         initNode.id = 0;
         q.add(initNode);
         HashMap<String, Node> visited = new HashMap<>();

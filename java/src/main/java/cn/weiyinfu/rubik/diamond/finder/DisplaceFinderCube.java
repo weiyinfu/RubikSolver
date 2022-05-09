@@ -1,4 +1,4 @@
-package cn.weiyinfu.rubik.diamond;
+package cn.weiyinfu.rubik.diamond.finder;
 
 import cn.weiyinfu.rubik.cube.Cube;
 
