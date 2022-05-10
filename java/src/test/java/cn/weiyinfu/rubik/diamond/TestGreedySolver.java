@@ -1,0 +1,55 @@
+package cn.weiyinfu.rubik.diamond;
+
+import cn.weiyinfu.rubik.diamond.object.CubeStart;
+import cn.weiyinfu.rubik.diamond.object.DiamondSimpleStart;
+import cn.weiyinfu.rubik.diamond.solvers.GreedySolverCubeStart;
+import cn.weiyinfu.rubik.diamond.solvers.GreedySolverDiamondSimpleStart;
+import junit.framework.TestCase;
+
+import java.util.Arrays;
+
+public class TestGreedySolver extends TestCase {
+
+    public void testGreedySolverCube() {
+        SolverPlayer p = new SolverPlayer(
+                new CubeStart(2),
+                new GreedySolverCubeStart(2, 7));
+        System.out.println(p.testSolver(7));
+        p.testSolverMultiTimes(100, 100);
+    }
+
+    public void testGreedySolverCube3() {
+        SolverPlayer p = new SolverPlayer(
+                new CubeStart(3),
+                new GreedySolverCubeStart(3, 7));
+        for (int i = 0; i < 10; i++) {
+            var a = p.getShuffleState(100);
+            try {
+                System.out.println(i + " " + p.testSolver(a));
+            } catch (Exception e) {
+                System.out.println(i + " false");
+            }
+        }
+    }
+
+    public void testGreedySolverCubeOne() {
+        SolverPlayer p = new SolverPlayer(
+                new CubeStart(2),
+                new GreedySolverCubeStart(2, 9));
+        var x = p.getShuffleState(15);
+        System.out.println(Arrays.toString(x));
+        System.out.println(p.testSolver(x));
+    }
+
+    public void testGreedyDiamondOne() {
+        SolverPlayer p = new SolverPlayer(
+                new DiamondSimpleStart(3),
+                new GreedySolverDiamondSimpleStart(3, 8));
+
+        var state = new int[]{17, 16, 20, 19, 4, 32, 21, 12, 22, 9, 23, 3, 34, 0, 1, 15, 14, 13, 18, 11, 2, 30, 31, 25, 28, 10, 27, 35, 33, 29, 6, 8, 5, 24, 7, 26};
+        var ans = p.solve(state);
+        System.out.println("Operations:" + ans + " " + ans.size());
+        var des = p.executeOps(state, ans, false);
+        System.out.println(Arrays.toString(des));
+    }
+}

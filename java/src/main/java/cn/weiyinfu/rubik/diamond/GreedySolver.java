@@ -8,12 +8,17 @@ import java.util.stream.Collectors;
 
 import static cn.weiyinfu.rubik.diamond.Displace.mul;
 
+/**
+ * 例如，魔方的上帝之数为100，只能搜索到10步以内的置换，则需要把一个置换
+ * 分解为10个置换的乘积，这个过程使用贪心的方式去解决，这种方法一定不如SearchSolver
+ * 基于启发式搜索的方法好。
+ */
 public class GreedySolver extends HalfSolver {
     public GreedySolver(Path tablePath, Provider p, int maxLayer) {
         super(tablePath, p, maxLayer);
     }
 
-    int howGoodPrefix(int[] a) {
+    static int howGoodPrefix(int[] a) {
         //只评价前缀有多少个符合要求
         var s = 0;
         for (int i = 0; i < a.length; i++) {
@@ -26,7 +31,7 @@ public class GreedySolver extends HalfSolver {
         return s;
     }
 
-    int howGoodSuffix(int[] a) {
+    static int howGoodSuffix(int[] a) {
         //只评价前缀有多少个符合要求
         var s = 0;
         for (int i = a.length - 1; i >= 0; i--) {
@@ -39,7 +44,7 @@ public class GreedySolver extends HalfSolver {
         return s;
     }
 
-    int howGood(int[] a) {
+    static int howGood(int[] a) {
         //判断a到目标状态的距离，这种评价方式梯度不够明确
         var s = 0;
         for (int i = 0; i < a.length; i++) {
@@ -77,19 +82,25 @@ public class GreedySolver extends HalfSolver {
         return ans;
     }
 
-    List<Integer> findGood(int[] a) {
+    List<Integer> findGood(int[] a, Set<Long> visited) {
         //寻找使得a变得最好的着法
         int maxGood = -1;
         List<int[]> bestDis = new ArrayList<>();
         for (var i : table.values()) {
-            if (i.layer == 0) continue;//如果是原地不动，那是万万不可的
             var x = Displace.mul(a, i.a);
-            int v = howGoodPrefix(x);
+            int v = howGoodSuffix(x);
             if (v > maxGood) {
+                var code = calculateHash(x);
+                if (visited.contains(code)) {
+                    continue;
+                }
                 maxGood = v;
                 bestDis.clear();
                 bestDis.add(i.a);
             } else if (v == maxGood) {
+                if (visited.contains(calculateHash(x))) {
+                    continue;
+                }
                 bestDis.add(i.a);
             }
         }
@@ -104,8 +115,11 @@ public class GreedySolver extends HalfSolver {
         var target = provider.newStart();
         var now = a;
         List<Integer> ops = new ArrayList<>();
+        //贪心搜索，但是不走重复步
+        var visited = new HashSet<Long>();
         while (!Arrays.equals(target, now)) {
-            var best = findGood(now);
+            visited.add(calculateHash(now));
+            var best = findGood(now, visited);
             //执行最佳决策，更改now的状态
             for (var op : best) {
                 var o = operations.get(op).displace;
@@ -118,7 +132,7 @@ public class GreedySolver extends HalfSolver {
             if (ops.size() > 10000) {
                 throw new RuntimeException("I cannot solve it:" + Arrays.toString(a));
             }
-            System.out.printf("已执行%s步，当前状态%s，当前best:%s，good=%s\n", ops.size(), Arrays.toString(now), best.size(), howGoodPrefix(now));
+//            System.out.printf("已执行%s步，当前状态%s，当前best:%s，good=%s\n", ops.size(), Arrays.toString(now), best.size(), howGoodPrefix(now));
 //            try {
 //                Thread.sleep(1000);
 //            } catch (Exception e) {
@@ -136,7 +150,7 @@ public class GreedySolver extends HalfSolver {
         var visited = new ConcurrentSkipListMap<Long, Node>();
         visited.put(start.hash, start);
         long beginTime = System.currentTimeMillis();
-        var dis = operations.stream().map(x -> new Op(x.displace)).collect(Collectors.toList());
+        var dis = operations.stream().map(x -> new Op(x.displace, zob)).collect(Collectors.toList());
         var layerCountMap = new TreeMap<Integer, Integer>();
         var lastLayer = 0;
         while (!q.isEmpty()) {

@@ -1,8 +1,7 @@
 package cn.weiyinfu.rubik.diamond.sample;
 
-import cn.weiyinfu.rubik.diamond.HalfSolver;
 import cn.weiyinfu.rubik.diamond.TableSolver;
-import cn.weiyinfu.rubik.diamond.obj.CubeStartDouble;
+import cn.weiyinfu.rubik.diamond.object.CubeStartDouble;
 
 import java.nio.file.Paths;
 

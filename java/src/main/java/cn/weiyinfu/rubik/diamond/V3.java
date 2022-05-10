@@ -14,7 +14,7 @@ public class V3 {
         this.z = z;
     }
 
-    double length() {
+    public double length() {
         return Math.sqrt(x * x + y * y + z * z);
     }
 
@@ -35,6 +35,10 @@ public class V3 {
         return new V3(x * ratio, y * ratio, z * ratio);
     }
 
+    public V3 copy() {
+        return new V3(x, y, z);
+    }
+
     @Override
     public String toString() {
         return "V3{" +
@@ -44,7 +48,4 @@ public class V3 {
                 '}';
     }
 
-    public V3 copy() {
-        return new V3(x, y, z);
-    }
 }

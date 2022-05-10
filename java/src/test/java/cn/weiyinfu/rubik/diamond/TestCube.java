@@ -1,7 +1,7 @@
 package cn.weiyinfu.rubik.diamond;
 
-import cn.weiyinfu.rubik.diamond.obj.Cube;
-import cn.weiyinfu.rubik.diamond.obj.DiamondSimple;
+import cn.weiyinfu.rubik.diamond.object.Cube;
+import cn.weiyinfu.rubik.diamond.object.DiamondSimple;
 import cn.weiyinfu.rubik.diamond.solvers.TableSolverDiamondSimple;
 import junit.framework.TestCase;
 

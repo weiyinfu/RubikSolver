@@ -16,9 +16,9 @@ import java.util.stream.Collectors;
  * */
 public class TableSolver implements Solver {
     Logger log = LoggerFactory.getLogger(TableSolver.class);
-    public final List<Operation> operations;
-    long[][] zob;
+    final List<Operation> operations;
     public Map<Long, Integer> table;
+    long[][] zob;
     Provider provider;
 
     class Node {

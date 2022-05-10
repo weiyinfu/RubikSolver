@@ -9,6 +9,7 @@ import java.util.LinkedList;
 import java.util.Queue;
 
 /*
+ * diamond广度优先搜索
  * 使用string作为去重工具内存消耗太大
  * */
 public class DiamondBroadSearch {

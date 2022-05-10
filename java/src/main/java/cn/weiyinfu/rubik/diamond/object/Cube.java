@@ -1,11 +1,13 @@
-package cn.weiyinfu.rubik.diamond.obj;
+package cn.weiyinfu.rubik.diamond.object;
 
 import cn.weiyinfu.rubik.diamond.*;
 import cn.weiyinfu.rubik.diamond.finder.DisplaceFinderCube;
 import cn.weiyinfu.rubik.two.Mini;
 
 import java.util.*;
-
+/*
+* n阶魔方provider
+* */
 public class Cube implements Provider, ColorString.ColorMap {
     protected final DisplaceFinderCube finder;
     protected final int n;

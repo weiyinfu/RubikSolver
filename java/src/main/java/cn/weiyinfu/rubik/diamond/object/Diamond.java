@@ -1,4 +1,4 @@
-package cn.weiyinfu.rubik.diamond.obj;
+package cn.weiyinfu.rubik.diamond.object;
 
 import cn.weiyinfu.rubik.diamond.*;
 import cn.weiyinfu.rubik.diamond.finder.DisplaceFinderDiamond;
@@ -6,7 +6,9 @@ import cn.weiyinfu.rubik.diamond.finder.DisplaceFinderDiamond;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
+/*
+* n阶四面体魔方
+* */
 public class Diamond implements ColorString.ColorMap, Provider {
     protected final DisplaceFinderDiamond finder;
     private final int n;

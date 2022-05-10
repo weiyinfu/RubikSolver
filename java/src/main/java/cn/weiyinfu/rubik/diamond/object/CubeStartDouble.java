@@ -1,4 +1,4 @@
-package cn.weiyinfu.rubik.diamond.obj;
+package cn.weiyinfu.rubik.diamond.object;
 
 import cn.weiyinfu.rubik.diamond.Displace;
 import cn.weiyinfu.rubik.diamond.Operation;
@@ -6,6 +6,9 @@ import cn.weiyinfu.rubik.diamond.Operation;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * 双向操作，也就是完备操作集
+ * */
 public class CubeStartDouble extends Cube {
 
     public CubeStartDouble(int n) {

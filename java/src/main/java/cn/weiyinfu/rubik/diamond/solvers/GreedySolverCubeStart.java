@@ -1,7 +1,7 @@
 package cn.weiyinfu.rubik.diamond.solvers;
 
 import cn.weiyinfu.rubik.diamond.GreedySolver;
-import cn.weiyinfu.rubik.diamond.obj.CubeStart;
+import cn.weiyinfu.rubik.diamond.object.CubeStart;
 
 import java.nio.file.Paths;
 /*

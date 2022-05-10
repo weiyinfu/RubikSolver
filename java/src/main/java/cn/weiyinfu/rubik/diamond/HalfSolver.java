@@ -16,9 +16,10 @@ import static cn.weiyinfu.rubik.diamond.Displace.mul;
 /**
  * 给定一个魔方，只记录若干步之后的全部状态
  * 当求解的时候，扫描全部置换
+ * <p>
+ * 比如三阶魔方上帝之数是20，那么记录10步以内的全部置换。
+ * 从这些置换里面选择两个就能够完成置换分解。
  */
-
-
 public class HalfSolver implements Solver {
     final int maxLayer;
     Logger log = LoggerFactory.getLogger(HalfSolver.class);
@@ -41,12 +42,14 @@ public class HalfSolver implements Solver {
         }
     }
 
-    class Op {
+    static class Op {
         List<Integer> valid = new ArrayList<>();
         int[] displace;
+        long[][] zob;
 
-        Op(int[] a) {
+        Op(int[] a, long[][] zob) {
             displace = a;
+            this.zob = zob;
             for (int i = 0; i < a.length; i++) {
                 if (a[i] == i) {
                     continue;
@@ -84,7 +87,7 @@ public class HalfSolver implements Solver {
         var visited = new ConcurrentSkipListMap<Long, Node>();
         visited.put(start.hash, start);
         long beginTime = System.currentTimeMillis();
-        var dis = operations.stream().map(x -> new Op(x.reverseDisplace)).collect(Collectors.toList());
+        var dis = operations.stream().map(x -> new Op(x.reverseDisplace, zob)).collect(Collectors.toList());
         var layerCountMap = new TreeMap<Integer, Integer>();
         var lastLayer = 0;
         while (!q.isEmpty()) {
@@ -118,7 +121,7 @@ public class HalfSolver implements Solver {
         return visited;
     }
 
-    void saveTable(Map<Long, Node> ma, Path tablePath) {
+    static void saveTable(Map<Long, Node> ma, Path tablePath) {
         try (var o = Files.newOutputStream(tablePath);
              var cout = new ObjectOutputStream(new BufferedOutputStream(o));
         ) {
@@ -128,10 +131,10 @@ public class HalfSolver implements Solver {
         }
     }
 
-    Map<Long, Node> loadTable(Path tablePath) {
+    static Map<Long, Node> loadTable(Path tablePath) {
         try (var cin = new ObjectInputStream(new BufferedInputStream(Files.newInputStream(tablePath)))) {
             Map<Long, Node> ma = (Map<Long, Node>) cin.readObject();
-            log.info("加载成功" + ma.size());
+            System.out.println("loadTable over:" + ma.size());
             return ma;
         } catch (Exception e) {
             e.printStackTrace();
@@ -215,8 +218,8 @@ public class HalfSolver implements Solver {
         }
         if (!Files.exists(tablePath)) {
             var ma = this.buildTables();
-            this.saveTable(ma, tablePath);
+            saveTable(ma, tablePath);
         }
-        this.table = this.loadTable(tablePath);
+        this.table = loadTable(tablePath);
     }
 }
