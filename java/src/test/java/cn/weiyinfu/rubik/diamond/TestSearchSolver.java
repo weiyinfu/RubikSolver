@@ -1,54 +1,61 @@
 package cn.weiyinfu.rubik.diamond;
 
-import cn.weiyinfu.rubik.diamond.object.CubeStart;
-import cn.weiyinfu.rubik.diamond.object.DiamondSimpleStart;
-import cn.weiyinfu.rubik.diamond.solvers.SearchSolverCubeStart;
-import cn.weiyinfu.rubik.diamond.solvers.SearchSolverDiamondSimpleStart;
+import cn.weiyinfu.rubik.diamond.object.Cube;
+import cn.weiyinfu.rubik.diamond.object.DiamondSimple;
+import cn.weiyinfu.rubik.diamond.solvers.SearchSolverCube;
+import cn.weiyinfu.rubik.diamond.solvers.SearchSolverDiamondSimple;
 import junit.framework.TestCase;
 
 import java.util.Arrays;
+import java.util.stream.Collectors;
 
 public class TestSearchSolver extends TestCase {
 
     public void testCubeOne() {
-        SolverPlayer p = new SolverPlayer(
-                new CubeStart(2),
-                new SearchSolverCubeStart(2, 7, 2));
-        var x = p.getShuffleState(1000);
-        System.out.println(Arrays.toString(x));
-        System.out.println(p.testSolver(x));
+        var solver = new SearchSolverCube(2, 7, 3);
+        var provider = new Cube(2);
+        SolverPlayer p = new SolverPlayer(provider, solver);
+        System.out.println(p.testSolver(1000));
+    }
+
+    public void testCubeOne2() {
+        var solver = new SearchSolverCube(2, 7, 3);
+        var provider = new Cube(2);
+        var a = new int[]{4, 5, 1, 0, 3, 2, 4, 0, 0, 2, 1, 2, 3, 4, 3, 5, 5, 4, 1, 0, 2, 3, 5, 1};
+        var s = Arrays.stream(a).mapToObj(x -> "rgbyow".charAt(x) + "").collect(Collectors.joining());
+        System.out.println(s);
+        var ans = solver.solve(a);
+        System.out.println(ans);
+        System.out.println(solver.solve(s));
     }
 
     public void testCubeMulti() {
+        //2,10,2 和2,7,3
         SolverPlayer p = new SolverPlayer(
-                new CubeStart(2),
-                new SearchSolverCubeStart(2, 10, 2));
-        p.testSolverMultiTimes(1000, 1000);
+                new Cube(2),
+                new SearchSolverCube(2, 7, 3));
+        p.testSolverMultiTimes(1000, 1000, false);
     }
 
     public void testCubeMulti3Steps() {
         SolverPlayer p = new SolverPlayer(
-                new CubeStart(2),
-                new SearchSolverCubeStart(2, 7, 3));
-        p.testSolverMultiTimes(1000, 1000);
+                new Cube(2),
+                new SearchSolverCube(2, 7, 3));
+        p.testSolverMultiTimes(1000, 1000, false);
     }
 
     public void testCube3() {
         SolverPlayer p = new SolverPlayer(
-                new CubeStart(3),
-                new SearchSolverCubeStart(3, 5, 3)
+                new Cube(3),
+                new SearchSolverCube(3, 5, 3)
         );
-        for (int i = 0; i < 10; i++) {
-            var a = p.getShuffleState(5);
-            System.out.println(Arrays.toString(a));
-            System.out.println(i + " " + p.testSolver(a));
-        }
+        p.testSolverMultiTimes(1000, 1, true);
     }
 
     public void testCube3Deep() {
         SolverPlayer p = new SolverPlayer(
-                new CubeStart(3),
-                new SearchSolverCubeStart(3, 4, 5)
+                new Cube(3),
+                new SearchSolverCube(3, 4, 5)
         );
         for (int i = 0; i < 10; i++) {
             System.out.println(i + " " + p.testSolver(4));
@@ -57,10 +64,20 @@ public class TestSearchSolver extends TestCase {
 
     public void testDiamondMulti3Steps() {
         SolverPlayer p = new SolverPlayer(
-                new DiamondSimpleStart(3),
-                new SearchSolverDiamondSimpleStart(3, 7, 3)
+                new DiamondSimple(3),
+                new SearchSolverDiamondSimple(3, 7, 3)
         );
-        p.testSolverMultiTimes(1000, 1000);
+        p.testSolverMultiTimes(1000, 1000, false);
+    }
+
+    public void testDiamondMulti3() {
+        SolverPlayer p = new SolverPlayer(
+                new DiamondSimple(3),
+                new SearchSolverDiamondSimple(3, 7, 3)
+        );
+        var a = p.getShuffleState(1000);
+        var s = Arrays.stream(a).mapToObj(x -> "rgbyow".charAt(x) + "").collect(Collectors.joining());
+        System.out.println(s);
     }
 
 }

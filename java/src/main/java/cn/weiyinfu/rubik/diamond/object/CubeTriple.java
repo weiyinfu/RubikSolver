@@ -9,9 +9,9 @@ import java.util.List;
 /**
  * 三倍操作集，在完备操作集的基础上加上180度旋转操作
  */
-public class CubeStartTriple extends Cube {
+public class CubeTriple extends Cube {
 
-    public CubeStartTriple(int n) {
+    public CubeTriple(int n) {
         super(n);
     }
 
@@ -29,15 +29,10 @@ public class CubeStartTriple extends Cube {
         for (var i : a) {
             var o = new Operation();
             o.displace = Displace.mul(i.displace, i.displace);
-            o.reverseDisplace = Displace.reverse(o.displace);
+            o.reverseDisplace = Displace.inverse(o.displace);
             o.name = i.name + "-";
             b.add(o);
         }
         return b;
-    }
-
-    @Override
-    public int[] newStart() {
-        return Displace.arange(6 * n * n);
     }
 }

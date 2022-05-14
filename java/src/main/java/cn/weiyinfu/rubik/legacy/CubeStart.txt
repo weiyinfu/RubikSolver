@@ -1,8 +1,9 @@
-package cn.weiyinfu.rubik.diamond.object;
+package cn.weiyinfu.rubik.legacy;
 
 import cn.weiyinfu.rubik.diamond.Displace;
 import cn.weiyinfu.rubik.diamond.FacePieceMap;
 import cn.weiyinfu.rubik.diamond.finder.SkeletonCube;
+import cn.weiyinfu.rubik.diamond.object.Cube;
 
 /*
  * n阶魔方provider，不同之处在于start局面是从0开始依次编号

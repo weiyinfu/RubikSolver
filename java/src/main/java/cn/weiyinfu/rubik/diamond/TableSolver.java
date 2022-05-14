@@ -18,7 +18,7 @@ public class TableSolver implements Solver {
     Logger log = LoggerFactory.getLogger(TableSolver.class);
     final List<Operation> operations;
     public Map<Long, Integer> table;
-    long[][] zob;
+    Zobrist zob;
     Provider provider;
 
     class Node {
@@ -52,25 +52,17 @@ public class TableSolver implements Solver {
             var hash = x.hash;
             for (int i = 0; i < valid.size(); i++) {
                 int ind = valid.get(i);
-                hash ^= zob[ind][a[ind]];
+                hash ^= zob.zob[ind][a[ind]];
                 a[ind] = x.a[displace[ind]];
-                hash ^= zob[ind][a[ind]];
+                hash ^= zob.zob[ind][a[ind]];
             }
             return new Node(a, hash, x.layer + 1);
         }
     }
 
-    long calculateHash(int[] a) {
-        long s = 0;
-        for (int i = 0; i < a.length; i++) {
-            s ^= zob[i][a[i]];
-        }
-        return s;
-    }
-
     Map<Long, Integer> buildTables() {
         var startState = provider.newStart();
-        var start = new Node(startState, calculateHash(startState), 0);
+        var start = new Node(startState, zob.calculateHash(startState), 0);
         Queue<Node> q = new ConcurrentLinkedQueue<>();
         q.add(start);
         var visited = new ConcurrentSkipListMap<Long, Integer>();
@@ -139,22 +131,10 @@ public class TableSolver implements Solver {
         }
     }
 
-
-    String opids2String(List<Integer> opIds) {
-        return opIds.stream()
-                .map(x -> operations.get(x).name)
-                .collect(Collectors.joining(","));
-
-    }
-
     public String solve(String s) {
         var a = provider.parseState(s);
         var opIds = solve(a);
-        return opids2String(opIds);
-    }
-
-    public String solveUseString(int[] a) {
-        return opids2String(solve(a));
+        return OperationList.operation2string(opIds, operations);
     }
 
     public List<Integer> solve(int[] a) {
@@ -166,7 +146,7 @@ public class TableSolver implements Solver {
             if (cnt > 100000) {
                 throw new RuntimeException("too much steps");
             }
-            var k = calculateHash(a);
+            var k = zob.calculateHash(a);
             var opId = table.get(k);
             if (opId == null) {
                 throw new RuntimeException("illegal state");
@@ -185,13 +165,7 @@ public class TableSolver implements Solver {
             throw new RuntimeException("operations is empty");
         }
         int displaceSize = operations.get(0).displace.length;
-        zob = new long[displaceSize][displaceSize];
-        Random r = new Random(0);
-        for (int i = 0; i < displaceSize; i++) {
-            for (int j = 0; j < displaceSize; j++) {
-                zob[i][j] = r.nextLong();
-            }
-        }
+        zob = new Zobrist(displaceSize, displaceSize);
         if (!Files.exists(tablePath)) {
             var ma = this.buildTables();
             this.saveTable(ma, tablePath);

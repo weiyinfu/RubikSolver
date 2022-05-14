@@ -9,9 +9,9 @@ import java.util.List;
 /**
  * 双向操作，也就是完备操作集
  * */
-public class CubeStartDouble extends Cube {
+public class CubeDouble extends Cube {
 
-    public CubeStartDouble(int n) {
+    public CubeDouble(int n) {
         super(n);
     }
 
@@ -27,9 +27,5 @@ public class CubeStartDouble extends Cube {
             b.add(o);
         }
         return b;
-    }
-    @Override
-    public int[] newStart() {
-        return Displace.arange(6 * n * n);
     }
 }

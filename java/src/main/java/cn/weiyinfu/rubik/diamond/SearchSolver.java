@@ -3,6 +3,7 @@ package cn.weiyinfu.rubik.diamond;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -13,57 +14,133 @@ import java.util.stream.Collectors;
 import static cn.weiyinfu.rubik.diamond.Displace.mul;
 
 public class SearchSolver implements Solver {
-    final Logger log = LoggerFactory.getLogger(SearchSolver.class);
-    private final int maxLayer;
-    private final int maxDepth;
-    private final int[] target;
-    private final Provider provider;
-    private final List<Operation> operations;
-    private final long[][] zob;
-    public Map<Long, HalfSolver.Node> table;
+    public static class Node implements Serializable {
+        public int[] a;
+        long hash;
+        int layer;//当前是第几层
+        int prevOp;
 
-    public SearchSolver(Path tablePath, Provider p, int maxLayer, int maxDepth) {
+        Node(int[] a, long hash, int layer, int prevOp) {
+            this.a = a;
+            this.hash = hash;
+            this.layer = layer;
+            this.prevOp = prevOp;
+        }
+    }
+
+    class Op {
+        List<Integer> valid = new ArrayList<>();
+        int[] displace;
+
+        Op(int[] a) {
+            displace = a;
+            for (int i = 0; i < a.length; i++) {
+                if (a[i] == i) {
+                    continue;
+                }
+                valid.add(i);
+            }
+        }
+
+        Node apply(Node x) {
+            int[] a = Arrays.copyOf(x.a, x.a.length);
+            var hash = x.hash;
+            for (int i = 0; i < valid.size(); i++) {
+                int ind = valid.get(i);
+                hash ^= zob.zob[ind][a[ind]];
+                a[ind] = x.a[displace[ind]];
+                hash ^= zob.zob[ind][a[ind]];
+            }
+            return new Node(a, hash, x.layer + 1, 0);
+        }
+    }
+
+    class OpGood {
+        int good;
+        int[] state;
+        Node node;
+
+        OpGood(int good, int[] a, Node node) {
+            this.good = good;
+            this.state = a;//执行完操作之后的状态
+            this.node = node;
+        }
+    }
+
+    final Logger log = LoggerFactory.getLogger(SearchSolver.class);
+    private int maxLayer;
+    private int maxDepth;
+    private int[] width;
+    protected int[] startState;
+    private long startStateCode;
+    int[] identityDisplace;
+    protected Provider provider;
+    protected List<Operation> operations;
+    private Zobrist zob;
+    public Map<Long, Node> table;
+    public Map<Long, Node> lastStep;
+
+    public SearchSolver() {
+
+    }
+
+    public void init(Path tablePath, Provider p, int maxLayer, int maxDepth, int[] width) {
         this.provider = p;
         this.maxLayer = maxLayer;
-        this.target = provider.newStart();
+        this.startState = provider.newStart();
         this.maxDepth = maxDepth;
         this.operations = provider.getOperations();
+        this.width = width;
         if (operations.size() == 0) {
             throw new RuntimeException("operations is empty");
         }
-        int displaceSize = operations.get(0).displace.length;
-        this.zob = new long[displaceSize][displaceSize];
-        Random r = new Random(0);
-        for (int i = 0; i < displaceSize; i++) {
-            for (int j = 0; j < displaceSize; j++) {
-                zob[i][j] = r.nextLong();
-            }
-        }
+        int displaceSize = startState.length;
+        this.zob = new Zobrist(displaceSize, displaceSize);
+        this.startStateCode = zob.calculateHash(this.startState);
+        this.identityDisplace = Displace.arange(displaceSize);
         if (!Files.exists(tablePath)) {
             var ma = this.buildTables();
-            HalfSolver.saveTable(ma, tablePath);
+            saveTable(ma, tablePath);
         }
-        this.table = HalfSolver.loadTable(tablePath);
+        this.table = loadTable(tablePath);
+        this.lastStep = new TreeMap<>();
+        //为了减少层数，直接对最后一步执行reverse
+        for (var i : table.values()) {
+            var x = Displace.mul(startState, Displace.inverse(i.a));
+            var code = zob.calculateHash(x);
+            lastStep.put(code, i);
+        }
     }
 
-    long calculateHash(int[] a) {
-        long s = 0;
-        for (int i = 0; i < a.length; i++) {
-            s ^= zob[i][a[i]];
+    static void saveTable(Map<Long, Node> ma, Path tablePath) {
+        try (var cout = new ObjectOutputStream(new BufferedOutputStream(Files.newOutputStream(tablePath)));
+        ) {
+            cout.writeObject(ma);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
-        return s;
     }
 
-    Map<Long, HalfSolver.Node> buildTables() {
-        var startState = provider.newStart();
-        var start = new HalfSolver.Node(startState, calculateHash(startState), 0, 0);
-        Queue<HalfSolver.Node> q = new ConcurrentLinkedQueue<>();
+    static Map<Long, Node> loadTable(Path tablePath) {
+        try (var cin = new ObjectInputStream(new BufferedInputStream(Files.newInputStream(tablePath)))) {
+            Map<Long, Node> ma = (Map<Long, Node>) cin.readObject();
+            System.out.println("loadTable over:" + ma.size());
+            return ma;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+    }
+
+    Map<Long, Node> buildTables() {
+        var start = new Node(identityDisplace, zob.calculateHash(identityDisplace), 0, 0);
+        Queue<Node> q = new ConcurrentLinkedQueue<>();
         q.add(start);
-        var visited = new ConcurrentSkipListMap<Long, HalfSolver.Node>();
+        var visited = new ConcurrentSkipListMap<Long, Node>();
         visited.put(start.hash, start);
         long beginTime = System.currentTimeMillis();
         //此处操作是正向操作
-        var dis = operations.stream().map(x -> new HalfSolver.Op(x.displace, zob)).collect(Collectors.toList());
+        var dis = operations.stream().map(x -> new Op(x.displace)).collect(Collectors.toList());
         var layerCountMap = new TreeMap<Integer, Integer>();
         var lastLayer = 0;
         while (!q.isEmpty()) {
@@ -97,24 +174,11 @@ public class SearchSolver implements Solver {
         return visited;
     }
 
-    class NodeGood {
-        int good;
-        int[] state;
-        HalfSolver.Node node;
-
-        NodeGood(int good, int[] a, HalfSolver.Node node) {
-            this.good = good;
-            this.state = a;//执行完操作之后的状态
-            this.node = node;
-        }
-    }
-
     //给定置换求正向操作
-    List<Integer> solveSimple(int[] a) {
-        //反转数组
+    List<Integer> solveDisplace(int[] a) {
         var opList = new ArrayList<Integer>();
-        while (!Arrays.equals(target, a)) {
-            var k = calculateHash(a);
+        while (!Arrays.equals(identityDisplace, a)) {
+            var k = zob.calculateHash(a);
             var no = table.get(k);
             if (no == null) {
                 throw new RuntimeException("illegal state");
@@ -124,50 +188,95 @@ public class SearchSolver implements Solver {
             opList.add(no.prevOp);
         }
         //将操作列表反转
-        var ans = new ArrayList<Integer>();
-        for (var i = opList.size() - 1; i >= 0; i--) {
-            ans.add(opList.get(i));
+        for (var i = 0; i < opList.size() / 2; i++) {
+            var j = opList.size() - 1 - i;
+            var temp = opList.get(i);
+            opList.set(i, opList.get(j));
+            opList.set(j, temp);
         }
-        return ans;
+        return opList;
+    }
+
+    int howGoodPrefix(int[] a) {
+        //只评价前缀有多少个符合要求
+        var s = 0;
+        for (int i = 0; i < a.length; i++) {
+            if (a[i] == startState[i]) {
+                s++;
+            } else {
+                break;
+            }
+        }
+        return s;
+    }
+
+    int howGoodSuffix(int[] a) {
+        //只评价前缀有多少个符合要求
+        var s = 0;
+        for (int i = a.length - 1; i >= 0; i--) {
+            if (a[i] == startState[i]) {
+                s++;
+            } else {
+                break;
+            }
+        }
+        return s;
+    }
+
+    int howGood(int[] a) {
+        //判断a到目标状态的距离，这种评价方式梯度不够明确
+        var s = 0;
+        for (int i = 0; i < a.length; i++) {
+            if (a[i] == startState[i]) {
+                s++;
+            }
+        }
+        return s;
     }
 
     List<Integer> search(int[] a, int depth) {
+        var code = zob.calculateHash(a);
+        if (code == startStateCode) return new ArrayList<>();
         if (depth >= maxDepth) {
             return null;
         }
-        if (Arrays.equals(a, target)) return new ArrayList<>();
-        if (depth == maxDepth - 1) {
-            /*还有最后一次机会
-            最后一次机会一定要成功，所以这里直接选择最佳方案
-             */
-            var nex = Displace.reverse(a);
-            var code = calculateHash(nex);
-            if (table.containsKey(code)) {
-                //如果已经存在，则不用遍历了，直接返回
-                return solveSimple(nex);
+        //最后一步的优化，如果发现无解，立马返回
+        if (lastStep.containsKey(code)) {
+            return solveDisplace(lastStep.get(code).a);
+        } else {
+            if (depth >= maxDepth - 1) {
+                return null;
             }
-            return null;
         }
-        List<NodeGood> candidates = new ArrayList<>(table.size());
+        List<OpGood> candidates = new ArrayList<>(table.size());
         for (var i : table.values()) {
             if (i.layer == 0) continue;//如果是原地不动，那是万万不可的
             var x = Displace.mul(a, i.a);
-            candidates.add(new NodeGood(GreedySolver.howGoodSuffix(x), x, i));
+            var goodness = howGoodSuffix(x);
+            candidates.add(new OpGood(goodness, x, i));
+            if (goodness == x.length) {
+                break;
+            }
         }
         candidates.sort(Comparator.comparing(x -> -x.good));
-        var ind = 0;
-        long lastSecond = 0;
+        if (depth > 0 && width != null && candidates.size() > width[depth - 1]) {
+            candidates = candidates.subList(0, width[depth - 1]);
+        }
+
+//        var ind = 0;
+//        long lastSecond = 0;
+
         for (var nex : candidates) {
-            ind++;
+//            ind++;
 //            var second = System.currentTimeMillis() / 1000;
-//            if (second % 3 == 0 && lastSecond != second) {
-//                lastSecond = second;
+//            if (second % 3 == 0 && lastSecond != second && depth == 0) {
 //                var ratio = 1.0 * ind / table.size();
 //                System.out.printf("depth=%s,ind=%s,table.size=%s,ratio=%s\n", depth, ind, table.size(), ratio);
+//                lastSecond = second;
 //            }
             var ops = search(nex.state, depth + 1);
             if (ops == null) continue;
-            var opList = solveSimple(nex.node.a);
+            var opList = solveDisplace(nex.node.a);
             opList.addAll(ops);
             return opList;
         }
@@ -177,6 +286,19 @@ public class SearchSolver implements Solver {
     @Override
     public List<Integer> solve(int[] a) {
         //贪心法搜索答案
-        return search(a, 0);
+        List<Integer> ans;
+        ans = search(a, 0);
+        if (ans == null) {
+            throw new RuntimeException("solve failed");
+        }
+        return ans;
     }
+
+
+    public String solve(String s) {
+        var a = provider.parseState(s);
+        var opIds = solve(a);
+        return OperationList.operation2string(opIds, operations);
+    }
+
 }

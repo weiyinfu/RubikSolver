@@ -8,6 +8,6 @@ import cn.weiyinfu.rubik.ui.WindowInput;
  */
 public class Min2Phase {
     public static void main(String[] args) {
-        new WindowInput(new Min2PhaseSolver());
+        new WindowInput(new Min2PhaseSolver(), 3);
     }
 }

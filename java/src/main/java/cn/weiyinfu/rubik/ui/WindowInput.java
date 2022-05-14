@@ -61,8 +61,8 @@ public class WindowInput extends JFrame {
         outputArea.setForeground(Color.white);
     }
 
-    public WindowInput(Solver solver) {
-        this.N = solver.getN();
+    public WindowInput(Solver solver, int n) {
+        this.N = n;
         setTitle(this.N + "阶魔方求解器");
         Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
         windowSize = (int) (Math.min(screenSize.width, screenSize.height) * 0.8);

@@ -32,7 +32,7 @@ public class Displace {
         return ans;
     }
 
-    public static int[] reverse(int[] displace) {
+    public static int[] inverse(int[] displace) {
         //求置换的逆元
         var a = new int[displace.length];
         for (int i = 0; i < a.length; i++) {
@@ -42,7 +42,7 @@ public class Displace {
     }
 
     public static int[] div(int[] a, int[] b) {
-        return mul(a, reverse(b));
+        return mul(a, inverse(b));
     }
 
     public static int[] divFast(int[] a, int[] b) {
@@ -54,7 +54,7 @@ public class Displace {
         return c;
     }
 
-    static Random r = new Random();
+    public static Random r = new Random();
 
     public static int[] randomDisplace(int n) {
         var a = arange(n);

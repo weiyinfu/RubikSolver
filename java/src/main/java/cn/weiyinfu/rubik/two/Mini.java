@@ -12,8 +12,15 @@ public class Mini {
     static final int[] pow = {1, 3, 9, 27, 81, 243, 729};
     static final int[] factorial = {1, 1, 2, 6, 24, 120, 720};
     // the color index of 8 position
-    public final static int[][] sword = {{18, 6, 20}, {7, 10, 16}, {19, 21, 15}, {11, 14, 17}, {0, 4, 22}, {2, 5, 8},
-            {1, 13, 23}, {3, 9, 12}};
+    public final static int[][] sword = {
+            {18, 6, 20},
+            {7, 10, 16},
+            {19, 21, 15},
+            {11, 14, 17},
+            {0, 4, 22},
+            {2, 5, 8},
+            {1, 13, 23},
+            {3, 9, 12}};
     static final String ops = "后左下";
 
     private Mini() {

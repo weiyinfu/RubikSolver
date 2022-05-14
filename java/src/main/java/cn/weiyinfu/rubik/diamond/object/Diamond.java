@@ -11,7 +11,7 @@ import java.util.TreeMap;
 * */
 public class Diamond implements ColorString.ColorMap, Provider {
     protected final DisplaceFinderDiamond finder;
-    private final int n;
+     final int n;
 
     public Diamond(int n) {
         this.n = n;

@@ -5,7 +5,7 @@ import cn.weiyinfu.rubik.diamond.object.CubeDouble;
 
 import java.nio.file.Paths;
 
-public class TableSolverCubeStartDouble2 {
+public class TableSolverCubeDouble2 {
     public static void main(String[] args) {
         int n = 2;
         int maxLayer = 6;

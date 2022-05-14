@@ -1,4 +1,7 @@
-package cn.weiyinfu.rubik.diamond;
+package cn.weiyinfu.rubik.legacy;
+
+import cn.weiyinfu.rubik.diamond.Displace;
+import cn.weiyinfu.rubik.diamond.Provider;
 
 import java.nio.file.Path;
 import java.util.*;

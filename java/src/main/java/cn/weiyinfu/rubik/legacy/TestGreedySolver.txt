@@ -1,5 +1,6 @@
-package cn.weiyinfu.rubik.diamond;
+package cn.weiyinfu.rubik.legacy;
 
+import cn.weiyinfu.rubik.diamond.SolverPlayer;
 import cn.weiyinfu.rubik.legacy.CubeStart;
 import cn.weiyinfu.rubik.legacy.DiamondSimpleStart;
 import cn.weiyinfu.rubik.diamond.solvers.GreedySolverCubeStart;

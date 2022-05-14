@@ -16,7 +16,7 @@ public class TestTableSolver extends TestCase {
                 new TableSolverCube(2)
         );
         System.out.println(p.testSolver(1000));
-        p.testSolverMultiTimes(1000, 1000);
+        p.testSolverMultiTimes(1000, 1000, false);
     }
 
     public void testDiamond3() {
@@ -24,7 +24,7 @@ public class TestTableSolver extends TestCase {
                 new DiamondSimple(3),
                 new TableSolverDiamondSimple(3));
         System.out.println(p.testSolver(1000));
-        p.testSolverMultiTimes(1000, 1000);
+        p.testSolverMultiTimes(1000, 1000, false);
     }
 
 

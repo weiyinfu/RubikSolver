@@ -7,23 +7,29 @@
     <link rel="shortcut icon" href="res/favicon.ico" type="image/x-icon"/>
     <title>魔方求解器</title>
     <link rel="stylesheet/less" type="text/css" href="index.less"/>
-    <script src="https://cdn.bootcss.com/axios/0.19.0-beta.1/axios.min.js"></script>
-    <script src="https://cdn.bootcss.com/less.js/3.10.3/less.min.js"></script>
+    <script src="https://weiyinfu.cn/cdn/axios.min.js"></script>
+    <script src="https://weiyinfu.cn/cdn/less.min.js"></script>
     <!--<script src="https://cdn.bootcss.com/vue/2.6.10/vue.js"></script>-->
-    <script src="https://cdn.bootcss.com/vue/2.6.10/vue.min.js"></script>
+    <script src="https://weiyinfu.cn/cdn/vue.min.js"></script>
 </head>
 <body>
 <!--main组件-->
 <div id="main">
     <div class="view" ref="view">
-        <face :n="n" :colors="faceColors[0]" :size="size"></face>
-        <div class="mid">
-            <face :n="n" :colors="faceColors[1]" :size="size"></face>
-            <face :n="n" :colors="faceColors[2]" :size="size"></face>
-            <face :n="n" :colors="faceColors[3]" :size="size"></face>
-        </div>
-        <face :n="n" :colors="faceColors[4]" :size="size"></face>
-        <face :n="n" :colors="faceColors[5]" :size="size"></face>
+        <template v-if="n===2||n===3">
+            <face :n="n" :colors="faceColors[0]" :size="size"></face>
+            <div class="mid">
+                <face :n="n" :colors="faceColors[1]" :size="size"></face>
+                <face :n="n" :colors="faceColors[2]" :size="size"></face>
+                <face :n="n" :colors="faceColors[3]" :size="size"></face>
+            </div>
+            <face :n="n" :colors="faceColors[4]" :size="size"></face>
+            <face :n="n" :colors="faceColors[5]" :size="size"></face>
+        </template>
+        <template v-else>
+            <canvas ref="canva">
+            </canvas>
+        </template>
         <!--toast消息-->
         <div id="toast" v-if="toast.message">
             <div class="box" :style="{color:toast.color}">{{toast.message}}</div>
@@ -31,13 +37,14 @@
     </div>
     <div class="input">
         <div class=control>
-            <select v-model="n" @change="changeCellSize">
+            <select v-model="n" @change="onChangeObjectType">
                 <option :value="2">二阶魔方</option>
                 <option :value="3">三阶魔方</option>
+                <option :value="103">三阶四面体魔方</option>
             </select>
             <button @click="colors=''">清空</button>
         </div>
-        <textarea :placeholder="`输入魔方${6*n*n}个面的颜色`" v-model="colors"></textarea>
+        <textarea :placeholder="`输入魔方${getFaceCount(n)}个面的颜色，每个颜色用一个小写字母表示`" v-model="colors"></textarea>
     </div>
 </div>
 <!--face组件-->
@@ -55,7 +62,7 @@
 <script>
     const number2color = ['white', 'green', 'red', 'blue', 'yellow', 'orange']
     const char2color = {}
-    for (var c of number2color) {
+    for (let c of number2color) {
         char2color[c[0]] = c
     }
 
@@ -86,7 +93,7 @@
     var main = {
         data() {
             return {
-                n: 2,//n阶魔方
+                n: 103,//魔方的ID，2表示二阶魔方；3表示三阶魔方；103表示三阶四面体魔方
                 colors: "",//颜色列表
                 size: 0,//每个颜色小正方形的高度
                 toast: {//toast的三个作用，警告，通知，答案
@@ -96,49 +103,52 @@
             }
         },
         mounted() {
-            window.onresize = this.changeCellSize
-            window.onload = this.changeCellSize
-            this.$nextTick(() => {
-                this.changeCellSize()
-            })
+            window.onresize = this.onResize
+            window.onload = this.onResize
+            setTimeout(() => {
+                this.onChangeObjectType()
+                this.drawDiamond();
+            }, 100)
         },
         computed: {
-            should() {
-                //红心白发蓝右臂
-                return [
-                    {x: 0, y: this.n * this.n - 1, color: 'white'},
-                    {x: 2, y: this.n - 1, color: 'red'},
-                    {x: 3, y: 0, color: 'blue'}
-                ]
-            },
             validColors() {
                 return this.colors.replace(/[^wgrbyo]/g, '')
             },
             faceColors() {
                 //把字符串转成颜色
-                var validColors = this.validColors
-                var faces = []
-                for (var i = 0; i < 6; i++) {
-                    var face = []
-                    for (var j = 0; j < this.n * this.n; j++) {
-                        face.push('grey')
-                    }
-                    faces.push(face)
-                }
-                for (var faceInd = 0; faceInd < 6; faceInd++) {
-                    for (var i = 0; i < this.n; i++) {
-                        for (var j = 0; j < this.n; j++) {
-                            var pos = i * this.n + j
-                            var colorIndex = faceInd * this.n * this.n + pos
-                            if (colorIndex >= validColors.length) break
-                            faces[faceInd][pos] = char2color [validColors[colorIndex]]
+                const validColors = this.validColors
+                const faces = []
+                if (this.n === 2 || this.n === 3) {
+                    let ind = 0;
+                    for (let i = 0; i < 6; i++) {
+                        const face = []
+                        for (let j = 0; j < this.n * this.n; j++) {
+                            if (ind < validColors.length) {
+                                face.push(char2color [validColors[ind]])
+                            } else {
+                                face.push('grey')
+                            }
+                            ind++;
                         }
+                        faces.push(face)
                     }
-                }
-                //如果是灰色，则显示成目标颜色
-                for (var i of this.should) {
-                    if (faces[i.x][i.y] === 'grey') {
-                        faces[i.x][i.y] = i.color
+                } else if (this.n > 100) {
+                    //四面体魔方
+                    const layer = this.n - 100;
+                    let ind = 0;
+                    for (let i = 0; i < 4; i++) {
+                        const face = [];
+                        for (let j = 0; j < layer; j++) {
+                            for (let k = 0; k < 2 * j + 1; k++) {
+                                if (ind < validColors.length) {
+                                    face.push(char2color[validColors[ind]]);
+                                } else {
+                                    face.push("grey")
+                                }
+                                ind++;
+                            }
+                        }
+                        faces.push(face);
                     }
                 }
                 return faces
@@ -149,48 +159,238 @@
             }
         },
         watch: {
+            colors() {
+                this.$nextTick(() => {
+                    this.drawDiamond();
+                })
+            },
             colorsAndN() {
                 //当颜色发生改变时，对颜色进行校验
-                if (this.validColors.length > 6 * this.n * this.n) {
-                    this.showToast(`颜色个数超过了${6 * this.n * this.n}个`, 'red')
-                    return
+                const totalCount = this.getFaceCount();
+                const realColor = this.validColors;
+                this.drawDiamond();
+                if (realColor.length < totalCount) {
+                    this.toast.message = ""
+                    return;
                 }
-                for (var i of this.should) {
-                    var j = i.x * this.n * this.n + i.y
-                    if (this.validColors.length > j && this.validColors[j] !== i.color[0]) {
-                        this.showToast("红心白发蓝右臂", 'red')
-                        return
-                    }
+                if (realColor.length > totalCount) {
+                    this.showToast(`颜色个数超过了${totalCount}个`, 'red')
+                    return;
                 }
-                if (this.validColors.length >= 6 * this.n * this.n) {
-                    this.get("/api/solve", {
-                        params: {
-                            n: this.n,
-                            q: this.validColors,
-                        }
-                    }).then(resp => {
-                        this.showToast(resp.data, 'green')
-                    }).catch(err => {
-                        this.showToast("求解失败，可能是状态错误", 'red')
-                    })
+                const colorSet = new Set();
+                for (let i = 0; i < realColor.length; i++) {
+                    colorSet.add(realColor[i]);
+                }
+                if (colorSet.size !== this.getColorCount()) {
+                    //颜色种数错误
+                    this.showToast(`颜色种数为${colorSet.size}，实际应为${this.getColorCount()}种`, 'red')
+                    return;
                 }
                 this.toast.message = ""
+                this.solve()
             }
         },
         methods: {
-            changeCellSize() {
+            drawDiamond() {
+                if (this.n < 100) return;
+                //根据颜色绘制四面体魔方
+                const c = this.$refs.canva;
+                if (!c) {
+                    console.log("canvas is null")
+                    return;
+                }
+                const parent = c.parentElement;
+                if (!parent) {
+                    console.log("drawDiamond parent is null")
+                    return;
+                }
+                const rec = parent.getBoundingClientRect();
+                c.width = rec.width;
+                c.height = rec.height;
+                console.log(parent);
+                console.log("drawDiamond " + rec.width)
+                const ctx = c.getContext('2d');
+                window.ctx = ctx;
+                window.c = c;
+                const n = this.n - 100;//魔方的阶数
+
+
+                function fillPolygon(p, color) {
+                    ctx.fillStyle = color;
+                    ctx.beginPath()
+                    ctx.moveTo(p[0][0], p[0][1]);
+                    for (let i = 0; i < p.length; i++) {
+                        const x = p[(i + 1) % p.length];
+                        ctx.lineTo(x[0], x[1]);
+                    }
+                    ctx.fill()
+                }
+
+                function strokePolygon(p, color, lineWidth) {
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = lineWidth;
+                    ctx.beginPath()
+                    ctx.moveTo(p[0][0], p[0][1]);
+                    for (let i = 0; i < p.length; i++) {
+                        const x = p[(i + 1) % p.length];
+                        ctx.lineTo(x[0], x[1]);
+                    }
+                    ctx.stroke()
+                }
+
+
+                function mean(a) {
+                    let sx = 0, sy = 0;
+                    for (let i = 0; i < a.length; i++) {
+                        sx += a[i][0];
+                        sy += a[i][1];
+                    }
+                    return [sx / a.length, sy / a.length]
+                }
+
+                function mid(A, B) {
+                    return mean([A, B])
+                }
+
+                function dingbifendian(A, B, ratio) {
+                    return [A[0] * (1 - ratio) + B[0] * ratio, A[1] * (1 - ratio) + B[1] * ratio]
+                }
+
+                function linspace(A, B, n) {
+                    if (n === 1) {
+                        return [A];
+                    }
+                    const a = []
+                    for (let i = 0; i < n; i++) {
+                        a.push(dingbifendian(A, B, i / (n - 1)))
+                    }
+                    return a;
+                }
+
+                function shrink(a, sz) {
+                    const center = mean(a)
+                    const b = []
+                    for (let i of a) {
+                        const v = [center[0] - i[0], center[1] - i[1]]
+                        const vsize = Math.hypot(v[0], v[1])
+                        const x = [i[0] + v[0] * sz / vsize, i[1] + v[1] * sz / vsize]
+                        b.push(x)
+                    }
+                    return b;
+                }
+
+                function getTriangles(A, B, C, reverse) {
+                    if (reverse) {
+                        [A, B, C] = [C, B, A]
+                    }
+                    const a = [];
+                    [A, B, C] = shrink([A, B, C], 3)
+                    for (let i = 0; i < n; i++) {
+                        const upLeft = dingbifendian(A, B, i / n)
+                        const upRight = dingbifendian(A, C, i / n)
+                        const up = linspace(upLeft, upRight, i + 1)
+                        const downLeft = dingbifendian(A, B, (i + 1) / n)
+                        const downRight = dingbifendian(A, C, (i + 1) / n)
+                        const down = linspace(downLeft, downRight, i + 2)
+                        const partOne = []
+                        for (let j = 0; j < up.length; j++) {
+                            partOne.push([up[j], down[j], down[j + 1]])
+                        }
+                        const partTwo = []
+                        for (let j = 1; j < down.length - 1; j++) {
+                            partTwo.push([up[j - 1], up[j], down[j]])
+                        }
+                        a.push(partOne[0])
+                        for (let j = 0; j < partTwo.length; j++) {
+                            a.push(partTwo[j])
+                            a.push(partOne[j + 1])
+                        }
+                    }
+                    if (reverse) {
+                        for (let i = 0; i < a.length / 2; i++) {
+                            [a[i], a[a.length - 1 - i]] = [a[a.length - 1 - i], a[i]]
+                        }
+                    }
+                    return a;
+                }
+
+                const triangles = []
+                const faceColors = this.faceColors;
+                const sz = Math.min(c.width, c.height / Math.sqrt(3) * 2)
+                const center = [c.width / 2, sz / 2 / Math.sqrt(3)]
+                const pointAngles = [-150, -30, 90]
+                const points = []
+                for (let i of pointAngles) {
+                    const r = sz / Math.sqrt(3)
+                    const angle = i / 180 * Math.PI;
+                    let x = center[0] + r * Math.cos(angle)
+                    let y = center[1] + r * Math.sin(angle);
+                    points.push([x, y])
+                }
+                const [A, B, C] = points;
+
+                triangles.push(getTriangles(A, mid(A, B), mid(A, C), true))
+                triangles.push(getTriangles(mid(A, B), mid(A, C), mid(B, C), false))
+                triangles.push(getTriangles(mid(A, B), B, mid(B, C), true))
+                triangles.push(getTriangles(mid(A, C), mid(B, C), C, true))
+                strokePolygon([mid(A, B), mid(A, C), mid(B, C)], 'white', 4)
+                for (let i = 0; i < 4; i++) {
+                    for (let j = 0; j < triangles[i].length; j++) {
+                        const tri = triangles[i][j];
+                        const color = faceColors[i][j];
+                        fillPolygon(shrink(tri, 2), color);
+                    }
+                }
+            },
+            getColorCount() {
+                if (this.n < 100) return 6;
+                else return 4;
+            },
+            solve() {
+                this.get("/api/solve", {
+                    params: {
+                        n: this.n,
+                        q: this.validColors,
+                    }
+                }).then(resp => {
+                    this.showToast(resp.data, 'green')
+                }).catch(err => {
+                    this.showToast("求解失败，可能是状态错误", 'red')
+                })
+            },
+            getFaceCount() {
+                const n = this.n;
+                if (n === 2 || n === 3) {
+                    return 6 * n * n;
+                } else if (n > 100 && n < 200) {
+                    let s = 0;
+                    const bigFace = n - 100;
+                    for (let i = 0; i < bigFace; i++) {
+                        s += 2 * i + 1;
+                    }
+                    return s * 4;
+                } else {
+                    return "invalid";
+                }
+            },
+            onChangeObjectType() {
                 //跟据view的宽度和高度，自动调整每个颜色面正方形的边长
-                var rect = this.$refs.view.getBoundingClientRect()
-                var faceBorderWidth = 2 * 4//每个小面之间应该有一定间隙
+                this.colors = ""
+                this.onResize();
+            },
+            onResize() {
+                const rect = this.$refs.view.getBoundingClientRect()
+                const faceBorderWidth = 2 * 4//每个小面之间应该有一定间隙
                 this.size = Math.min(
                     (rect.width - faceBorderWidth) / 3 / this.n,
-                    (rect.height - faceBorderWidth) / 4 / this.n)
+                    (rect.height - faceBorderWidth) / 4 / this.n);
+                setTimeout(() => this.drawDiamond(), 100)
             },
             showToast(message, color) {
                 this.toast.message = message
                 this.toast.color = color ? 'red' : color
             },
-            get(url,...args) {
+            get(url, ...args) {
                 const appName = "/RubikSolver/"
                 if (url.startsWith("/api/") && location.pathname.startsWith(appName)) {
                     url = `${appName}${url.slice(1)}`

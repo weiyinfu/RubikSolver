@@ -57,7 +57,7 @@ public class SolverPlayer {
         return testSolver(randomState);
     }
 
-    void testSolverMultiTimes(int shuffleCount, int n) {
+    void testSolverMultiTimes(int shuffleCount, int n, boolean verbose) {
         var right = 0;
 
         for (int i = 0; i < n; i++) {
@@ -66,6 +66,9 @@ public class SolverPlayer {
                 var res = testSolver(shuffleCount);
                 if (res) {
                     right++;
+                }
+                if (verbose) {
+                    System.out.println(i + ":" + res);
                 }
             } catch (Exception e) {
 

@@ -1,8 +1,9 @@
-package cn.weiyinfu.rubik.diamond.object;
+package cn.weiyinfu.rubik.legacy;
 
 import cn.weiyinfu.rubik.diamond.Displace;
 import cn.weiyinfu.rubik.diamond.FacePieceMap;
 import cn.weiyinfu.rubik.diamond.finder.SkeletonDiamond;
+import cn.weiyinfu.rubik.diamond.object.DiamondSimple;
 
 /*
  * n阶四面体魔方：初始状态使用从0开始依次编号，不再使用颜色

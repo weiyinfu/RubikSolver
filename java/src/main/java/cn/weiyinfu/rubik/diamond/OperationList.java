@@ -13,10 +13,17 @@ public class OperationList {
                     var o = new Operation();
                     o.name = x.getKey();
                     o.displace = x.getValue();
-                    o.reverseDisplace = Displace.reverse(o.displace);
+                    o.reverseDisplace = Displace.inverse(o.displace);
                     return o;
                 })
                 .sorted(Comparator.comparing(x -> x.name))
                 .collect(Collectors.toList());
+    }
+
+    public static String operation2string(List<Integer> opIds, List<Operation> operations) {
+        return opIds.stream()
+                .map(x -> operations.get(x).name)
+                .collect(Collectors.joining(","));
+
     }
 }

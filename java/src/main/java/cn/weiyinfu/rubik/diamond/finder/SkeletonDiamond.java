@@ -1,41 +1,17 @@
 package cn.weiyinfu.rubik.diamond.finder;
 
+import cn.weiyinfu.rubik.diamond.Linalg;
 import cn.weiyinfu.rubik.diamond.V3;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import static cn.weiyinfu.rubik.diamond.Linalg.*;
-import static java.lang.Math.*;
+import static java.lang.Math.pow;
+import static java.lang.Math.sqrt;
 
-/**
- * 给定一个四面体，把它划分成n份，求各个小四面体的中心坐标
- */
-public class Skeleton {
-    //根据skeleton生成各种操作之后的置换，免去繁琐的书写流程
-    //四面体魔方的skeleton，记录若干个点
-    public class FacePoint {
-        int pointIndex;
-        int[] faceId;
-
-        FacePoint(int pointIndex) {
-            this.pointIndex = pointIndex;
-            faceId = new int[4];
-            Arrays.fill(faceId, -1);
-        }
-
-        public int count() {
-            int s = 0;
-            for (int j : faceId) {
-                if (j != -1) {
-                    s++;
-                }
-            }
-            return s;
-        }
-    }
-
-    List<V3> a = new ArrayList<>();//骨骼点列表
-    Map<Integer, FacePoint> facePoints = new HashMap<>();
+public class SkeletonDiamond extends Skeleton {
     int n;//阶数
     public int totalFace;//总面数
     public int perFace;//每个面的面数
@@ -46,16 +22,6 @@ public class Skeleton {
     V3 back;
     double bottomDis;//每个小立方体的体心到面心的距离
     double smallDiamondHeight;//每个小立方体的高度
-
-    //给定一个点寻找下标
-    int findIndex(V3 p) {
-        for (int i = 0; i < a.size(); i++) {
-            if (distance(p, a.get(i)) < 1e-2) {
-                return i;
-            }
-        }
-        return -1;
-    }
 
     //给定一个面，求这个面所决定的小三角形列表
     List<V3> getTriangles(V3 A, V3 B, V3 C) {
@@ -95,33 +61,7 @@ public class Skeleton {
         return ans;
     }
 
-    // 设置面的映射，大面由ABC三点所决定
-    // reverseTriangle表示是否反转顺序进行标注ID
-    void setFaceMap(V3 A, V3 B, V3 C, V3 D, boolean reverseTriangle, int faceIndex) {
-        var center = mean(A, B, C);
-        var heightVec = D.sub(center).resize(bottomDis);
-        var triangles = getTriangles(A, B, C);
-        if (reverseTriangle) {
-            triangles = reverse(triangles);
-        }
-        int base = perFace * faceIndex;
-        for (int i = 0; i < triangles.size(); i++) {
-            var faceCenter = mean(triangles.get(i));
-            var bodyCenter = faceCenter.add(heightVec);
-            var ind = findIndex(bodyCenter);
-            if (ind == -1) {
-                //没找到则添加
-                ind = this.a.size();
-                this.a.add(bodyCenter);
-                var x = new FacePoint(ind);
-                this.facePoints.put(ind, x);
-            }
-            var x = this.facePoints.get(ind);
-            x.faceId[faceIndex] = base + i;
-        }
-    }
-
-    public Skeleton(int n) {
+    public SkeletonDiamond(int n) {
         this.n = n;
         for (int i = 0; i < n; i++) {
             perFace += i * 2 + 1;
@@ -139,9 +79,28 @@ public class Skeleton {
         V3 bodyCenter = mean(fourPoints);
         bottomDis = distance(bottomCenter, bodyCenter) / N;
         smallDiamondHeight = distance(top, bottomCenter) / N;
-        setFaceMap(left, top, back, right, true, 0);
-        setFaceMap(top, left, right, back, false, 1);
-        setFaceMap(right, back, top, left, true, 2);
-        setFaceMap(back, right, left, top, true, 3);
+
+        this.init();
+    }
+
+    Face handle(V3 A, V3 B, V3 C, V3 D, boolean reverseTriangle, int faceIndex) {
+        var center = mean(A, B, C);
+        var heightVec = D.sub(center).resize(bottomDis);
+        var triangles = getTriangles(A, B, C);
+        if (reverseTriangle) {
+            triangles = reverse(triangles);
+        }
+        List<V3> faceCenters = triangles.stream().map(Linalg::mean).collect(Collectors.toList());
+        return new Face(faceCenters, heightVec);
+    }
+
+    @Override
+    List<Face> getFaces() {
+        var a = new ArrayList<Face>();
+        a.add(handle(left, top, back, right, true, 0));
+        a.add(handle(top, left, right, back, false, 1));
+        a.add(handle(right, back, top, left, true, 2));
+        a.add(handle(back, right, left, top, true, 3));
+        return a;
     }
 }

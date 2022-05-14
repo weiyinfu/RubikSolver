@@ -1,0 +1,42 @@
+测试二阶魔方和三阶魔方Start模式和颜色模式的互相转换。
+    public void testParse() {
+        var c = new Cube(3);
+        var cc = new Cube(3).newStart();
+        SolverPlayer p = new SolverPlayer(c,
+                new SearchSolverCube(3, 4, 5)
+        );
+        var x = p.getShuffleState(1000);
+        System.out.println(Arrays.toString(x));
+        var s = new StringBuilder();
+        for (int i : x) {
+            var color = cc[i];
+            s.append("abcdefgh".charAt(color));
+        }
+        System.out.println(s);
+        var colorExp = c.parseState(s.toString());
+        System.out.println(Arrays.toString(colorExp));
+        System.out.println(Arrays.equals(colorExp, x));
+    }
+
+
+    public void testDiamondParse() {
+        var c = new DiamondSimple(3);
+        var cc = new DiamondSimple(3).newStart();
+        var solver = new SearchSolverDiamondSimple(3, 7, 3);
+        SolverPlayer p = new SolverPlayer(c, solver);
+//        var x = p.getShuffleState(1000);
+        var x = c.newStart();
+        System.out.println(Arrays.toString(x));
+        var s = new StringBuilder();
+        System.out.println(Arrays.toString(cc) + "  cc");
+        for (int i : x) {
+            var color = cc[i];
+            s.append("abcdefgh".charAt(color));
+        }
+        System.out.println(s);
+        var colorExp = c.parseState(s.toString());
+        System.out.println(Arrays.toString(colorExp));
+//        System.out.println(solver.solve(s.toString()));
+        System.out.println(Arrays.equals(colorExp, x));
+
+    }

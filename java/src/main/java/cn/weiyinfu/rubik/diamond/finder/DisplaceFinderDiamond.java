@@ -2,7 +2,6 @@ package cn.weiyinfu.rubik.diamond.finder;
 
 import cn.weiyinfu.rubik.diamond.Displace;
 import cn.weiyinfu.rubik.diamond.V3;
-
 import java.util.*;
 
 import static cn.weiyinfu.rubik.diamond.Linalg.*;
@@ -13,7 +12,7 @@ import static java.lang.Math.PI;
  */
 public class DisplaceFinderDiamond {
     PutType stateManager = new PutTypeDiamond();
-    public Skeleton skeleton;
+    public SkeletonDiamond skeleton;
 
     class Node {
         V3 position;
@@ -212,6 +211,6 @@ public class DisplaceFinderDiamond {
     }
 
     public DisplaceFinderDiamond(int n) {
-        this.skeleton = new Skeleton(n);
+        this.skeleton = new SkeletonDiamond(n);
     }
 }

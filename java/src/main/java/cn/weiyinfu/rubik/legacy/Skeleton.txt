@@ -1,0 +1,162 @@
+package cn.weiyinfu.rubik.legacy;
+
+import cn.weiyinfu.rubik.diamond.V3;
+
+import java.util.*;
+
+import static cn.weiyinfu.rubik.diamond.Linalg.*;
+import static java.lang.Math.*;
+
+/**
+ * 给定一个四面体，把它划分成n份，求各个小四面体的中心坐标
+ * <p>
+ * 这是最初的skeleton版本，只适用于四面体。基于此，实现了可以兼容多种object的Skeleton.
+ */
+public class Skeleton {
+    //根据skeleton生成各种操作之后的置换，免去繁琐的书写流程
+    //四面体魔方的skeleton，记录若干个点
+    public class FacePoint {
+        int pointIndex;
+        int[] faceId;
+
+        FacePoint(int pointIndex) {
+            this.pointIndex = pointIndex;
+            faceId = new int[4];
+            Arrays.fill(faceId, -1);
+        }
+
+        public int count() {
+            int s = 0;
+            for (int j : faceId) {
+                if (j != -1) {
+                    s++;
+                }
+            }
+            return s;
+        }
+    }
+
+    List<V3> a = new ArrayList<>();//骨骼点列表
+    Map<Integer, FacePoint> facePoints = new HashMap<>();
+    int n;//阶数
+    public int totalFace;//总面数
+    public int perFace;//每个面的面数
+    //四个面的坐标
+    V3 left;
+    V3 right;
+    V3 top;
+    V3 back;
+    double bottomDis;//每个小立方体的体心到面心的距离
+    double smallDiamondHeight;//每个小立方体的高度
+
+    //给定一个点寻找下标
+    int findIndex(V3 p) {
+        for (int i = 0; i < a.size(); i++) {
+            if (distance(p, a.get(i)) < 1e-2) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    //给定一个面，求这个面所决定的小三角形列表
+    List<V3> getTriangles(V3 A, V3 B, V3 C) {
+        //将三角形A、B、C分割成一堆点
+        List<V3> triangles = new ArrayList<>();
+        for (int i = 1; i <= n; i++) {
+            var lastLayerF = dingBiFenDian(A, B, (i - 1.0) / n);
+            var lastLayerT = dingBiFenDian(A, C, (i - 1.0) / n);
+            var nextLayerF = dingBiFenDian(A, B, i * 1.0 / n);
+            var nextLayerT = dingBiFenDian(A, C, i * 1.0 / n);
+            V3[] lastLayer = linspace(lastLayerF, lastLayerT, i);
+            V3[] nextLayer = linspace(nextLayerF, nextLayerT, i + 1);
+            List<V3> nextLayerTriangles = new ArrayList<>();
+            List<V3> lastLayerTriangles = new ArrayList<>();
+            for (int j = 0; j < nextLayer.length - 1; j++) {
+                var m = mean(nextLayer[j], nextLayer[j + 1], lastLayer[j]);
+                nextLayerTriangles.add(m);
+            }
+            for (int j = 0; j < lastLayer.length - 1; j++) {
+                var m = mean(lastLayer[j], lastLayer[j + 1], nextLayer[j + 1]);
+                lastLayerTriangles.add(m);
+            }
+            for (int j = 0; j < lastLayerTriangles.size(); j++) {
+                triangles.add(nextLayerTriangles.get(j));
+                triangles.add(lastLayerTriangles.get(j));
+            }
+            triangles.add(nextLayerTriangles.get(nextLayerTriangles.size() - 1));
+        }
+        return triangles;
+    }
+
+    List<V3> reverse(List<V3> a) {
+        List<V3> ans = new ArrayList<>();
+        for (int i = 0; i < a.size(); i++) {
+            ans.add(a.get(a.size() - 1 - i));
+        }
+        return ans;
+    }
+
+    // 设置面的映射，大面由ABC三点所决定
+    // reverseTriangle表示是否反转顺序进行标注ID
+    void setFaceMap(V3 A, V3 B, V3 C, V3 D, boolean reverseTriangle, int faceIndex) {
+        var center = mean(A, B, C);
+        var heightVec = D.sub(center).resize(bottomDis);
+        var triangles = getTriangles(A, B, C);
+        if (reverseTriangle) {
+            triangles = reverse(triangles);
+        }
+        int base = perFace * faceIndex;
+        for (int i = 0; i < triangles.size(); i++) {
+            var faceCenter = mean(triangles.get(i));
+            var bodyCenter = faceCenter.add(heightVec);
+            var ind = findIndex(bodyCenter);
+            if (ind == -1) {
+                //没找到则添加
+                ind = this.a.size();
+                this.a.add(bodyCenter);
+                var x = new FacePoint(ind);
+                this.facePoints.put(ind, x);
+            }
+            var x = this.facePoints.get(ind);
+            x.faceId[faceIndex] = base + i;
+        }
+    }
+
+    public Skeleton(int n) {
+        this.n = n;
+        for (int i = 0; i < n; i++) {
+            perFace += i * 2 + 1;
+        }
+        totalFace = perFace * 4;
+        double N = n;
+        //以最左边为原点，以最左和最右为X轴建立立体坐标系
+        left = new V3(0, 0, 0);
+        right = new V3(N, 0, 0);
+        //后面那个点的坐标(N/2,back,0)
+        back = new V3(N / 2, N * sqrt(3) / 2, 0);
+        V3 bottomCenter = mean(left, right, back);
+        top = new V3(bottomCenter.x, bottomCenter.y, sqrt(N * N - pow(distance(bottomCenter, left), 2)));
+        V3[] fourPoints = {top, left, right, back};
+        V3 bodyCenter = mean(fourPoints);
+        bottomDis = distance(bottomCenter, bodyCenter) / N;
+        smallDiamondHeight = distance(top, bottomCenter) / N;
+        setFaceMap(left, top, back, right, true, 0);
+        setFaceMap(top, left, right, back, false, 1);
+        setFaceMap(right, back, top, left, true, 2);
+        setFaceMap(back, right, left, top, true, 3);
+    }
+
+    public static void main(String[] args) {
+        var a = new Skeleton(3);
+        for (var i : a.facePoints.values()) {
+            StringBuilder s = new StringBuilder();
+            for (int j : i.faceId) {
+                if (j != -1) {
+                    s.append(j + ",");
+                }
+            }
+            System.out.println(s);
+        }
+    }
+}
