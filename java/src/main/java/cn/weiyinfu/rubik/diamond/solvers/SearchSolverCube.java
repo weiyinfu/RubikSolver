@@ -1,13 +1,13 @@
 package cn.weiyinfu.rubik.diamond.solvers;
 
 import cn.weiyinfu.rubik.diamond.SearchSolver;
-import cn.weiyinfu.rubik.diamond.object.CubeStart;
+import cn.weiyinfu.rubik.diamond.object.Cube;
 
 import java.nio.file.Paths;
 
 public class SearchSolverCubeStart extends SearchSolver {
     public SearchSolverCubeStart(int n, int maxLayer, int maxDepth) {
-        super(Paths.get(String.format("SearchSolverCubeStart%s_%s.bin", n, maxLayer)), new CubeStart(n), maxLayer, maxDepth);
+        super(Paths.get(String.format("SearchSolverCubeStart%s_%s.bin", n, maxLayer)), new Cube(n), maxLayer, maxDepth);
     }
 
     public static void main(String[] args) {

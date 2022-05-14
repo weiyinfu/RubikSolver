@@ -1,7 +1,7 @@
 package cn.weiyinfu.rubik.diamond;
 
-import cn.weiyinfu.rubik.diamond.object.CubeStart;
-import cn.weiyinfu.rubik.diamond.object.DiamondSimpleStart;
+import cn.weiyinfu.rubik.legacy.CubeStart;
+import cn.weiyinfu.rubik.legacy.DiamondSimpleStart;
 import cn.weiyinfu.rubik.diamond.solvers.HalfSolverCubeStart;
 import cn.weiyinfu.rubik.diamond.solvers.HalfSolverDiamondSimpleStart;
 import junit.framework.TestCase;

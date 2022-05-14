@@ -80,7 +80,7 @@ public class HalfSolver implements Solver {
     }
 
     Map<Long, Node> buildTables() {
-        var startState = provider.newStart();
+        var startState = Displace.arange(operations.get(0).displace.length);
         var start = new Node(startState, calculateHash(startState), 0, 0);
         Queue<Node> q = new ConcurrentLinkedQueue<>();
         q.add(start);
@@ -142,18 +142,10 @@ public class HalfSolver implements Solver {
         }
     }
 
-
-    String opids2String(List<Integer> opIds) {
-        return opIds.stream()
-                .map(x -> operations.get(x).name)
-                .collect(Collectors.joining(","));
-
-    }
-
     public String solve(String s) {
         var a = provider.parseState(s);
         var opIds = solve(a);
-        return opids2String(opIds);
+        return OperationList.operation2string(opIds, operations);
     }
 
     List<Integer> solveSimple(int[] a) {
