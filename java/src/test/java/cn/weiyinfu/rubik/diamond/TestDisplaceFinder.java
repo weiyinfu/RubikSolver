@@ -8,10 +8,10 @@ import java.util.Arrays;
 public class TestDisplaceFinder extends TestCase {
 
     public void testDisplace() {
-        var finder = new DisplaceFinderDiamond(2);
+        var finder = new DisplaceFinderDiamond(3);
         DisplaceFinderDiamond.Diamond m = finder.NewStartNode();
         System.out.println(m);
-        System.out.println(Arrays.toString(finder.left(1)));
+        System.out.println(Arrays.toString(finder.down(1)));
     }
 
     public void testRotate2() {

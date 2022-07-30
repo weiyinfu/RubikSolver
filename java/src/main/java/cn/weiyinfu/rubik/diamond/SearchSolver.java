@@ -297,6 +297,7 @@ public class SearchSolver implements Solver {
 
     public String solve(String s) {
         var a = provider.parseState(s);
+        System.out.println("solving" + Arrays.toString(a));
         var opIds = solve(a);
         return OperationList.operation2string(opIds, operations);
     }

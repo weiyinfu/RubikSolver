@@ -8,7 +8,7 @@ import java.util.*;
 public class SolverPlayer {
 
     private final Solver solver;
-    private final Provider p;
+    public final Provider p;
     List<Operation> operations;
 
     SolverPlayer(Provider p, Solver solver) {

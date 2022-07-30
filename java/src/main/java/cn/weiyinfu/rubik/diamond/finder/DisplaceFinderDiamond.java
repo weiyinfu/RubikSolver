@@ -2,6 +2,7 @@ package cn.weiyinfu.rubik.diamond.finder;
 
 import cn.weiyinfu.rubik.diamond.Displace;
 import cn.weiyinfu.rubik.diamond.V3;
+
 import java.util.*;
 
 import static cn.weiyinfu.rubik.diamond.Linalg.*;
@@ -156,7 +157,7 @@ public class DisplaceFinderDiamond {
         return d;
     }
 
-    int[] down(int layerCount) {
+    public int[] down(int layerCount) {
         //获取旋转下面layerCount层的置换
         var x = NewStartNode();
         return x.rotate(3, layerCount, false).getFaces();
@@ -205,7 +206,7 @@ public class DisplaceFinderDiamond {
             operations.put(String.format("左%s", i), left(i));
             operations.put(String.format("右%s", i), right(i));
             operations.put(String.format("后%s", i), back(i));
-            operations.put(String.format("下%s", i), down(i));
+            operations.put(String.format("下%s", skeleton.n - i), down(skeleton.n - i));
         }
         return operations;
     }

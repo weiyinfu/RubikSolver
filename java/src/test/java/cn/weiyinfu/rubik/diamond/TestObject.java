@@ -8,7 +8,7 @@ import junit.framework.TestCase;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
-public class TestCube extends TestCase {
+public class TestObject extends TestCase {
 
     public void testParseState() {
         SolverPlayer p = new SolverPlayer(
@@ -42,7 +42,7 @@ public class TestCube extends TestCase {
     }
 
     public void testParseState2() {
-        var s = "ccabbcaaaababdddddccdddcaaabbbccdbcb";
+        var s = "ggggygggggrrrrrrrrryyyyyyyybbbbbbbbb";
         var x = new DiamondSimple(3);
         var ans = x.parseState(s);
         System.out.println(Arrays.toString(ans));

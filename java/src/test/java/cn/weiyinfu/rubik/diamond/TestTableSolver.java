@@ -3,6 +3,7 @@ package cn.weiyinfu.rubik.diamond;
 import cn.weiyinfu.rubik.diamond.object.Cube;
 import cn.weiyinfu.rubik.diamond.object.DiamondSimple;
 import cn.weiyinfu.rubik.diamond.solvers.TableSolverCube;
+import cn.weiyinfu.rubik.diamond.solvers.TableSolverDiamond;
 import cn.weiyinfu.rubik.diamond.solvers.TableSolverDiamondSimple;
 import junit.framework.TestCase;
 
@@ -41,4 +42,19 @@ public class TestTableSolver extends TestCase {
         System.out.println(Arrays.toString(des));
     }
 
+    public void testSolver() {
+        var solver = new TableSolverDiamondSimple(3);
+        var state = "yybyyrygyrbrrrrgrrbbrbbybybggyggggbg";
+        System.out.println(solver.table.size());
+        var ans = solver.solve(state);
+        System.out.println(ans);
+    }
+
+    public void testDiamondFullSolver() {
+        var solver = new TableSolverDiamond(3);
+        var state = "grygbbyryrybgggryrgrbyrrbyybbbrbgggy";
+        System.out.println(solver.table.size());
+        var ans = solver.solve(state);
+        System.out.println(ans);
+    }
 }

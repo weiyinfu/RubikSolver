@@ -4,6 +4,7 @@ import cn.weiyinfu.rubik.diamond.object.Cube;
 import cn.weiyinfu.rubik.diamond.object.DiamondSimple;
 import cn.weiyinfu.rubik.diamond.solvers.SearchSolverCube;
 import cn.weiyinfu.rubik.diamond.solvers.SearchSolverDiamondSimple;
+import cn.weiyinfu.rubik.diamond.solvers.TableSolverDiamondSimple;
 import junit.framework.TestCase;
 
 import java.util.Arrays;
@@ -12,6 +13,7 @@ import java.util.stream.Collectors;
 public class TestSearchSolver extends TestCase {
 
     public void testCubeOne() {
+        //SearchSolver测试Cube
         var solver = new SearchSolverCube(2, 7, 3);
         var provider = new Cube(2);
         SolverPlayer p = new SolverPlayer(provider, solver);
@@ -76,8 +78,20 @@ public class TestSearchSolver extends TestCase {
                 new SearchSolverDiamondSimple(3, 7, 3)
         );
         var a = p.getShuffleState(1000);
+        System.out.println(Arrays.toString(a));
         var s = Arrays.stream(a).mapToObj(x -> "rgbyow".charAt(x) + "").collect(Collectors.joining());
         System.out.println(s);
+        System.out.println("init state" + Arrays.toString(p.p.newStart()));
+        var ans = p.solve(a);
+        System.out.println("operations:" + ans);
+    }
+
+    public void testSearchSolver() {
+        var solver = new SearchSolverDiamondSimple(3, 3, 7);
+        var state = "yybyyrygyrbrrrrgrrbbrbbybybggyggggbg";
+        System.out.println(solver.table.size());
+        var ans = solver.solve(state);
+        System.out.println(ans);
     }
 
 }
